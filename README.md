@@ -34,17 +34,37 @@ run somewhere reachable 24/7 — Render, Railway, Fly.io, a VPS, or any host
 that runs the included `Dockerfile`. Static hosts (GitHub Pages, Netlify
 static, etc.) won't work.
 
+## Design system
+
+Root `/` is a minimal, app-like single card: paste a link, one primary
+action, live platform-detection status line (a colored dot + label that
+updates as you type — the one signature interaction on the page), results,
+one ad slot. No marketing sections, no FAQ, no long copy — that all lives at
+`/learn/` (see below) so the tool itself stays fast and uncluttered on
+mobile and reads as a proper small website on tablet/laptop (`@media
+(min-width:820px)` widens the column and padding).
+
+Tokens live at the top of `style.css`: a cool-neutral paper background with
+a warm amber accent (light theme by default, full `prefers-color-scheme:
+dark` variant included), Space Grotesk for the headline, Inter for UI text,
+and JetBrains Mono specifically for data — the URL input, duration, file
+size, resolution — since this tool's whole job is precise data in, file out.
+
 ## SEO
 
-`public/index.html` ships with the on-page fundamentals: a keyword-relevant
-title/description, Open Graph + Twitter card tags, a generated `og.png`
-(1200×630 branded preview image), favicons, and JSON-LD structured data
-(`SoftwareApplication`, `FAQPage`, `WebSite`, `BreadcrumbList`). `robots.txt`
-and `sitemap.xml` are in `public/` too, so they're served at the site root.
+Long-form content — "how it works", supported platforms, why-OmniSaver,
+and the full FAQ (with its `FAQPage` JSON-LD, matched to the visible
+content on that exact page per Google's structured-data requirements) —
+lives at `/learn/` (`public/learn/index.html`), not on the app page. `/`
+keeps a lean `SoftwareApplication` + `WebSite`/`Organization` schema and
+links to `/learn/`; `/learn/` links back with a "Try it now" CTA. Both pages
+ship keyword-relevant title/description, Open Graph + Twitter cards, and
+share the generated `og.png` (1200×630) and favicons. `robots.txt` and
+`sitemap.xml` (listing both URLs) are in `public/`, served at the site root.
 
 **Before going live, replace every occurrence of the placeholder domain
-`https://omnisaver.app`** (in `index.html`'s `<head>`, `robots.txt`, and
-`sitemap.xml`) with your real domain — the canonical URL, Open Graph tags,
+`https://omnisaver.app`** (in both pages' `<head>`, `robots.txt`, and
+`sitemap.xml`) with your real domain — the canonical URLs, Open Graph tags,
 and sitemap are all wrong until that's done, which actively hurts indexing.
 
 None of this *guarantees* ranking — this niche (fastvideosave, snapinsta,
@@ -78,12 +98,15 @@ docker run -p 3000:3000 omnisaver
 
 ## Monetization / ad slots
 
-Ad containers are already placed in `public/index.html` (look for
-`class="ad-slot"`): a top leaderboard, an in-content rectangle after results,
-a sticky sidebar (desktop), a footer banner, and an interstitial slot shown
-for a few seconds before each download starts (`runInterstitial` in
-`app.js`) — this "wait, then download" pattern is the standard revenue model
-for this category of site, since the interstitial gets its own ad impression.
+Ad inventory is deliberately minimal to match the app's design — one native-
+styled unit on `/` (below the results card), one on `/learn/`, and an
+interstitial shown for a few seconds before each download starts
+(`runInterstitial` in `app.js`) — this "wait, then download" pattern is the
+standard revenue model for this category of site, since the interstitial
+gets its own ad impression. This trades some ad surface for a page that
+doesn't look ad-choked; if you want more inventory back (a header banner, a
+sidebar on wide desktop), the `.ad-slot` styling in `style.css` is set up to
+extend easily — just add more `<div class="ad-slot">` containers.
 
 **Google AdSense will very likely reject or suspend a site in this niche** —
 its program policies explicitly prohibit sites that facilitate unauthorized

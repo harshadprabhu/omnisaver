@@ -2,21 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>OmniSaver — Free Video, Reel &amp; Audio Downloader (YouTube, Instagram, Facebook, TikTok, X)</title>
-<meta name="description" content="Paste any YouTube, Instagram Reel, Facebook, TikTok or X video link and OmniSaver auto-detects the platform, then gives you an instant MP4 or MP3 download. Free, no sign-up, nothing stored.">
-<meta name="keywords" content="video downloader, reel downloader, youtube video downloader, instagram reel downloader, facebook video downloader, tiktok video downloader, mp4 downloader, mp3 converter, download video from link">
-<meta name="author" content="OmniSaver">
+<title>OmniSaver — Video &amp; Audio Downloader</title>
+<meta name="description" content="Paste any YouTube, Instagram, Facebook, TikTok or X link. OmniSaver detects the platform and gives you an MP4 or MP3 download. Free, no sign-up.">
 <!-- PLACEHOLDER DOMAIN — replace every occurrence of https://omnisaver.app with your real domain once you pick a host. -->
 <link rel="canonical" href="https://omnisaver.app/">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b0d12">
+<meta name="theme-color" content="#F5F6F8">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="OmniSaver">
-<meta property="og:title" content="OmniSaver — Free Video, Reel & Audio Downloader">
+<meta property="og:title" content="OmniSaver — Video & Audio Downloader">
 <meta property="og:description" content="Paste any YouTube, Instagram, Facebook, TikTok or X link — get an instant MP4 or MP3 download. Free, no sign-up, nothing stored.">
 <meta property="og:url" content="https://omnisaver.app/">
 <meta property="og:image" content="https://omnisaver.app/og.png">
@@ -25,212 +23,106 @@
 <meta property="og:locale" content="en_US">
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="OmniSaver — Free Video, Reel & Audio Downloader">
+<meta name="twitter:title" content="OmniSaver — Video & Audio Downloader">
 <meta name="twitter:description" content="Paste any YouTube, Instagram, Facebook, TikTok or X link — get an instant MP4 or MP3 download.">
 <meta name="twitter:image" content="https://omnisaver.app/og.png">
-<!-- Structured data -->
+<!-- Structured data: the app itself. Long-form / FAQ content and its schema live at /learn/. -->
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
  {"@type":"WebSite","@id":"https://omnisaver.app/#site","url":"https://omnisaver.app/","name":"OmniSaver","inLanguage":"en-US"},
  {"@type":"Organization","@id":"https://omnisaver.app/#org","name":"OmniSaver","url":"https://omnisaver.app/","logo":"https://omnisaver.app/logo.png"},
- {"@type":"SoftwareApplication","name":"OmniSaver","applicationCategory":"MultimediaApplication","operatingSystem":"Any (web browser)","url":"https://omnisaver.app/","description":"Paste a YouTube, Instagram, Facebook, TikTok or X link to get an MP4 or MP3 download. Free, no sign-up.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}},
- {"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://omnisaver.app/"}]},
- {"@type":"FAQPage","mainEntity":[
-  {"@type":"Question","name":"Which platforms are supported?","acceptedAnswer":{"@type":"Answer","text":"YouTube, Instagram, Facebook and TikTok links work end-to-end today. X/Twitter detection is on, with download support rolling out as we harden it against that platform's frequent page changes."}},
-  {"@type":"Question","name":"Is OmniSaver free to use?","acceptedAnswer":{"@type":"Answer","text":"Yes. Paste a link, pick a format, and download — no account, subscription or payment required."}},
-  {"@type":"Question","name":"Do you store the videos I download?","acceptedAnswer":{"@type":"Answer","text":"No. Every download is streamed straight from the source to your device as it converts; nothing is saved on our servers before, during or after."}},
-  {"@type":"Question","name":"Can I download audio only, as MP3?","acceptedAnswer":{"@type":"Answer","text":"Yes. Once a link is fetched, choose the MP3 option under \"Audio only\" to get just the sound track instead of the full video."}},
-  {"@type":"Question","name":"What video quality can I download?","acceptedAnswer":{"@type":"Answer","text":"OmniSaver lists every resolution the source actually publishes for that video, from the highest available down to lower, smaller-file-size options — pick whichever fits your device or data plan."}},
-  {"@type":"Question","name":"Can I download WhatsApp videos this way?","acceptedAnswer":{"@type":"Answer","text":"No — WhatsApp doesn't expose a public link for shared media the way the platforms above do, so there's nothing for a URL-based tool to fetch. Forwarding or saving from within WhatsApp itself is the only option there."}},
-  {"@type":"Question","name":"Is this legal?","acceptedAnswer":{"@type":"Answer","text":"Only download content you own, have permission to use, or that's covered by the platform's own license terms (e.g. an explicit \"save\" feature). You're responsible for complying with each platform's terms of service and applicable copyright law."}}
- ]}
+ {"@type":"SoftwareApplication","name":"OmniSaver","applicationCategory":"MultimediaApplication","operatingSystem":"Any (web browser)","url":"https://omnisaver.app/","description":"Paste a YouTube, Instagram, Facebook, TikTok or X link to get an MP4 or MP3 download. Free, no sign-up.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
 ]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a class="brand" href="/">
-      <span class="brand-mark" aria-hidden="true">⬇</span>
-      <span class="brand-name">OmniSaver</span>
-    </a>
-    <p class="tagline">One box. Every platform. MP4 or MP3.</p>
-  </div>
-</header>
 
 <p class="preview-banner" id="preview-banner" hidden>
   Preview build — the download backend isn't connected here yet, so links won't resolve. The UI is fully browsable.
 </p>
 
-<!-- AD SLOT: top leaderboard banner. Replace with your ad network's tag. -->
-<div class="ad-slot ad-slot--leaderboard" id="ad-top" aria-label="Advertisement">
-  <span class="ad-slot__label">Advertisement</span>
-</div>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">⬇</span>
+      OmniSaver
+    </a>
+    <a class="nav-link" href="learn/">How it works</a>
+  </div>
+</header>
 
-<main class="wrap layout">
-  <div class="layout__main">
+<main class="wrap">
 
-    <section class="hero card">
-      <h1>Download videos, reels &amp; audio — from any link</h1>
-      <p class="hero__sub">Paste a link below. OmniSaver auto-detects whether it's YouTube, Instagram, Facebook, TikTok or X, and hands you a ready-to-save file.</p>
+  <section class="app-card">
+    <h1>Save video or audio from any link</h1>
+    <p class="hero__sub">Paste a link — YouTube, Instagram, Facebook, TikTok or X are detected automatically.</p>
 
-      <form id="resolve-form" class="fetch-form" autocomplete="off">
-        <div class="fetch-form__input-row">
-          <input
-            id="url-input"
-            type="url"
-            inputmode="url"
-            placeholder="Paste a video / reel link here…"
-            required
-            aria-label="Video link"
-          >
-          <button type="submit" id="fetch-btn">
-            <span class="btn-label">Get download links</span>
-            <span class="btn-spinner" hidden></span>
-          </button>
-        </div>
-        <div class="platform-row" id="platform-row" aria-live="polite">
-          <span class="platform-chip" data-platform="youtube">YouTube</span>
-          <span class="platform-chip" data-platform="instagram">Instagram</span>
-          <span class="platform-chip" data-platform="facebook">Facebook</span>
-          <span class="platform-chip" data-platform="tiktok">TikTok</span>
-          <span class="platform-chip" data-platform="twitter">X / Twitter</span>
-        </div>
-      </form>
-
-      <p class="error-msg" id="error-msg" role="alert" hidden></p>
-
-      <ul class="trust-badges">
-        <li>Free, always</li>
-        <li>No sign-up</li>
-        <li>Nothing stored on our servers</li>
-        <li>Works on mobile &amp; desktop</li>
-      </ul>
-    </section>
-
-    <section class="results card" id="results" hidden>
-      <div class="results__media">
-        <img id="result-thumb" alt="" class="results__thumb">
+    <form id="resolve-form" class="fetch-form" autocomplete="off">
+      <div class="fetch-form__input-row">
+        <input
+          id="url-input"
+          type="url"
+          inputmode="url"
+          placeholder="Paste a link…"
+          required
+          aria-label="Video link"
+        >
+        <button type="submit" id="fetch-btn">
+          <span class="btn-label">Get download</span>
+          <span class="btn-spinner" hidden></span>
+        </button>
       </div>
-      <div class="results__info">
-        <span class="results__platform" id="result-platform"></span>
-        <h2 id="result-title"></h2>
-        <p class="results__meta" id="result-meta"></p>
+      <p class="detect-status" id="detect-status" aria-live="polite">
+        <span class="detect-dot" aria-hidden="true"></span>
+        <span id="detect-label">Waiting for a link…</span>
+      </p>
+    </form>
 
-        <div class="format-group">
-          <h3>Video (MP4)</h3>
-          <div class="format-list" id="video-formats"></div>
-        </div>
-        <div class="format-group">
-          <h3>Audio only</h3>
-          <div class="format-list" id="audio-formats">
-            <button class="format-btn" data-mode="audio">🎧 MP3 — extract audio</button>
-          </div>
-        </div>
-      </div>
-    </section>
+    <p class="error-msg" id="error-msg" role="alert" hidden></p>
 
-    <!-- AD SLOT: in-content rectangle, appears once results are shown. -->
-    <div class="ad-slot ad-slot--rectangle" id="ad-incontent" aria-label="Advertisement">
-      <span class="ad-slot__label">Advertisement</span>
+    <p class="trust-line">Free · No sign-up · Nothing stored on our servers</p>
+  </section>
+
+  <section class="app-card results" id="results" hidden>
+    <div class="results__media">
+      <img id="result-thumb" alt="" class="results__thumb">
     </div>
+    <div class="results__info">
+      <span class="results__platform" id="result-platform-wrap">
+        <span class="detect-dot" aria-hidden="true"></span>
+        <span id="result-platform"></span>
+      </span>
+      <h2 id="result-title"></h2>
+      <p class="results__meta" id="result-meta"></p>
 
-    <section class="card how-it-works">
-      <h2>How it works</h2>
-      <ol>
-        <li><strong>Copy</strong> the link to a reel, video or post from YouTube, Instagram, Facebook, TikTok or X.</li>
-        <li><strong>Paste</strong> it above — OmniSaver identifies the platform automatically, no menu needed.</li>
-        <li><strong>Choose</strong> a quality (HD/SD video) or MP3 audio, and download directly to your device.</li>
-      </ol>
-    </section>
-
-    <section class="card platforms" aria-labelledby="platforms-heading">
-      <h2 id="platforms-heading">Supported platforms</h2>
-      <div class="platform-grid">
-        <article>
-          <h3>YouTube video downloader</h3>
-          <p>Paste a YouTube video or Shorts link to pull it down as MP4 in whatever resolutions the video was uploaded in, or strip out just the audio as MP3.</p>
-        </article>
-        <article>
-          <h3>Instagram Reels downloader</h3>
-          <p>Works with public Reels and video posts — paste the share link from the Instagram app or website to get an MP4 you can save straight to your camera roll.</p>
-        </article>
-        <article>
-          <h3>Facebook video downloader</h3>
-          <p>Save public Facebook videos and Reels by pasting the post or watch link — no Facebook login needed on your end.</p>
-        </article>
-        <article>
-          <h3>TikTok video downloader</h3>
-          <p>Paste a TikTok link to fetch the video as MP4, or grab the sound on its own as MP3.</p>
-        </article>
-        <article>
-          <h3>X (Twitter) video downloader</h3>
-          <p>Platform detection for X/Twitter links is live; full download support is being hardened against X's frequent page changes and is rolling out.</p>
-        </article>
+      <div class="format-group">
+        <h3>Video</h3>
+        <div class="format-list" id="video-formats"></div>
       </div>
-    </section>
-
-    <section class="card why">
-      <h2>Why OmniSaver</h2>
-      <div class="why-grid">
-        <div><h3>Genuinely free</h3><p>No account, no subscription, no hidden paywall on formats or quality.</p></div>
-        <div><h3>Privacy-first</h3><p>Your download is streamed straight through — we don't keep a copy on our servers.</p></div>
-        <div><h3>One box for every platform</h3><p>Skip picking a menu — paste any supported link and the right platform is detected automatically.</p></div>
-        <div><h3>Video or audio, your choice</h3><p>Take the full MP4 or just extract the audio as MP3 in one click.</p></div>
+      <div class="format-group">
+        <h3>Audio only</h3>
+        <div class="format-list" id="audio-formats">
+          <button class="format-btn" data-mode="audio">MP3</button>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="card faq">
-      <h2>FAQ</h2>
-      <details>
-        <summary>Which platforms are supported?</summary>
-        <p>YouTube, Instagram, Facebook and TikTok links work end-to-end today. X/Twitter detection is on, with download support rolling out as we harden it against that platform's frequent page changes.</p>
-      </details>
-      <details>
-        <summary>Is OmniSaver free to use?</summary>
-        <p>Yes. Paste a link, pick a format, and download — no account, subscription or payment required.</p>
-      </details>
-      <details>
-        <summary>Do you store the videos I download?</summary>
-        <p>No. Every download is streamed straight from the source to your device as it converts; nothing is saved on our servers before, during or after.</p>
-      </details>
-      <details>
-        <summary>Can I download audio only, as MP3?</summary>
-        <p>Yes. Once a link is fetched, choose the MP3 option under "Audio only" to get just the sound track instead of the full video.</p>
-      </details>
-      <details>
-        <summary>What video quality can I download?</summary>
-        <p>OmniSaver lists every resolution the source actually publishes for that video, from the highest available down to lower, smaller-file-size options — pick whichever fits your device or data plan.</p>
-      </details>
-      <details>
-        <summary>Can I download WhatsApp videos this way?</summary>
-        <p>No — WhatsApp doesn't expose a public link for shared media the way the platforms above do, so there's nothing for a URL-based tool to fetch. Forwarding or saving from within WhatsApp itself is the only option there.</p>
-      </details>
-      <details>
-        <summary>Is this legal?</summary>
-        <p>Only download content you own, have permission to use, or that's covered by the platform's own license terms (e.g. an explicit "save" feature). You're responsible for complying with each platform's terms of service and applicable copyright law.</p>
-      </details>
-    </section>
-
+  <!-- AD SLOT: single native-styled unit. Replace with your ad network's tag. -->
+  <div class="ad-slot ad-slot--rect" id="ad-main" aria-label="Advertisement">
+    <span class="ad-slot__tag">Ad</span>
+    Advertisement
   </div>
 
-  <!-- AD SLOT: sticky sidebar, desktop only. -->
-  <aside class="layout__sidebar">
-    <div class="ad-slot ad-slot--sidebar" id="ad-sidebar" aria-label="Advertisement">
-      <span class="ad-slot__label">Advertisement</span>
-    </div>
-  </aside>
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
-    <!-- AD SLOT: footer banner. -->
-    <div class="ad-slot ad-slot--leaderboard" id="ad-footer" aria-label="Advertisement">
-      <span class="ad-slot__label">Advertisement</span>
+    <div class="footer-links">
+      <a href="learn/">How it works &amp; FAQ</a>
     </div>
     <p class="disclaimer">
       OmniSaver is a personal-use download tool. You are responsible for only downloading content you have the
@@ -244,9 +136,10 @@
   <div class="interstitial__box">
     <p class="interstitial__title">Preparing your download…</p>
     <div class="ad-slot ad-slot--interstitial" aria-label="Advertisement">
-      <span class="ad-slot__label">Advertisement</span>
+      <span class="ad-slot__tag">Ad</span>
+      Advertisement
     </div>
-    <p class="interstitial__countdown">Your download starts in <span id="countdown-num">5</span>s</p>
+    <p class="interstitial__countdown">Starting in <span id="countdown-num">5</span>s</p>
   </div>
 </div>
 

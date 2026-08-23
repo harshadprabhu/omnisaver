@@ -1,9 +1,9 @@
 const PLATFORM_PATTERNS = [
-  { id: 'youtube', re: /(?:youtube\.com|youtu\.be)/i },
-  { id: 'instagram', re: /instagram\.com/i },
-  { id: 'facebook', re: /(?:facebook\.com|fb\.watch)/i },
-  { id: 'tiktok', re: /tiktok\.com/i },
-  { id: 'twitter', re: /(?:twitter\.com|x\.com)/i },
+  { id: 'youtube', label: 'YouTube', re: /(?:youtube\.com|youtu\.be)/i },
+  { id: 'instagram', label: 'Instagram', re: /instagram\.com/i },
+  { id: 'facebook', label: 'Facebook', re: /(?:facebook\.com|fb\.watch)/i },
+  { id: 'tiktok', label: 'TikTok', re: /tiktok\.com/i },
+  { id: 'twitter', label: 'X / Twitter', re: /(?:twitter\.com|x\.com)/i },
 ];
 
 const form = document.getElementById('resolve-form');
@@ -12,10 +12,13 @@ const fetchBtn = document.getElementById('fetch-btn');
 const btnLabel = fetchBtn.querySelector('.btn-label');
 const btnSpinner = fetchBtn.querySelector('.btn-spinner');
 const errorMsg = document.getElementById('error-msg');
-const platformChips = document.querySelectorAll('.platform-chip');
+const detectStatus = document.getElementById('detect-status');
+const detectLabel = document.getElementById('detect-label');
 
 const resultsSection = document.getElementById('results');
+const resultMedia = document.querySelector('.results__media');
 const resultThumb = document.getElementById('result-thumb');
+const resultPlatformWrap = document.getElementById('result-platform-wrap');
 const resultPlatform = document.getElementById('result-platform');
 const resultTitle = document.getElementById('result-title');
 const resultMeta = document.getElementById('result-meta');
@@ -42,18 +45,29 @@ let currentUrl = '';
 })();
 
 function detectPlatform(value) {
-  return PLATFORM_PATTERNS.find((p) => p.re.test(value))?.id || null;
+  return PLATFORM_PATTERNS.find((p) => p.re.test(value)) || null;
 }
 
-function highlightPlatform(id) {
-  platformChips.forEach((chip) => {
-    chip.classList.toggle('active', chip.dataset.platform === id);
-  });
+function updateDetectStatus(value) {
+  const trimmed = value.trim();
+  const match = detectPlatform(trimmed);
+
+  if (!trimmed) {
+    detectStatus.classList.remove('is-active');
+    detectStatus.removeAttribute('data-platform');
+    detectLabel.textContent = 'Waiting for a link…';
+  } else if (match) {
+    detectStatus.classList.add('is-active');
+    detectStatus.dataset.platform = match.id;
+    detectLabel.textContent = `${match.label} detected`;
+  } else {
+    detectStatus.classList.remove('is-active');
+    detectStatus.removeAttribute('data-platform');
+    detectLabel.textContent = "Doesn't look like a supported link yet";
+  }
 }
 
-urlInput.addEventListener('input', () => {
-  highlightPlatform(detectPlatform(urlInput.value.trim()));
-});
+urlInput.addEventListener('input', () => updateDetectStatus(urlInput.value));
 
 function setLoading(isLoading) {
   fetchBtn.disabled = isLoading;
@@ -106,9 +120,16 @@ form.addEventListener('submit', async (e) => {
 
 function renderResults(data) {
   resultPlatform.textContent = data.platformLabel;
+  resultPlatformWrap.dataset.platform = data.platform;
   resultTitle.textContent = data.title;
-  resultThumb.src = data.thumbnail || '';
-  resultThumb.alt = data.title;
+  if (data.thumbnail) {
+    resultThumb.onerror = () => { resultMedia.hidden = true; };
+    resultThumb.src = data.thumbnail;
+    resultThumb.alt = data.title;
+    resultMedia.hidden = false;
+  } else {
+    resultMedia.hidden = true;
+  }
 
   const parts = [];
   if (data.uploader) parts.push(data.uploader);
@@ -123,17 +144,16 @@ function renderResults(data) {
     .sort((a, b) => heightOf(b) - heightOf(a));
 
   if (videoFormats.length === 0) {
-    videoFormatsEl.innerHTML = '<span class="results__meta">No separate video qualities — use Fetch Best below.</span>';
     const btn = document.createElement('button');
     btn.className = 'format-btn';
-    btn.textContent = '⬇ Download video (best available)';
+    btn.textContent = 'Best available';
     btn.addEventListener('click', () => startDownload({ mode: 'video' }));
     videoFormatsEl.appendChild(btn);
   } else {
     videoFormats.slice(0, 6).forEach((f) => {
       const btn = document.createElement('button');
       btn.className = 'format-btn';
-      btn.textContent = `⬇ ${f.resolution || f.ext} (${f.ext})${formatSize(f.filesize)}`;
+      btn.textContent = `${f.resolution || f.ext}${formatSize(f.filesize)}`;
       btn.addEventListener('click', () => startDownload({ mode: 'video', formatId: f.format_id }));
       videoFormatsEl.appendChild(btn);
     });
