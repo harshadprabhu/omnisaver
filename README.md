@@ -96,6 +96,38 @@ docker build -t omnisaver .
 docker run -p 3000:3000 omnisaver
 ```
 
+## Deploy the real backend (make downloads actually work)
+
+The GitHub Pages preview (`.github/workflows/deploy-pages.yml`) is
+static-only and deliberately can't run `yt-dlp` — see **How it works**
+above for why that's a hard constraint, not a config gap. To get working
+downloads on a real URL, the backend needs to run somewhere as a live
+process. This repo includes a Render Blueprint (`render.yaml`) for the
+fastest path to that, free to start:
+
+1. Go to **https://dashboard.render.com/blueprints** (sign up/log in with
+   GitHub if you haven't already).
+2. Click **New Blueprint Instance**, pick the `omnisaver` repo. Render reads
+   `render.yaml` automatically — it builds the existing `Dockerfile` (which
+   already installs `yt-dlp` + `ffmpeg`) and wires up the `/api/health`
+   check.
+3. Click **Apply** / **Deploy**. First build takes a few minutes.
+
+That connect-and-click step needs to happen from your Render account — no
+API access exists for me to do it from here (same reason the GitHub Pages
+toggle earlier needed you directly). Once it's live, tell me the URL Render
+gives you (`https://omnisaver-xxxx.onrender.com`) and I'll verify it end to
+end — resolve a real link, download a file, confirm formats — and wire the
+GitHub Pages preview and canonical URLs to point at it.
+
+**Free tier caveat**: Render's free web services spin down after 15 minutes
+idle, so the first request after a quiet period takes ~30-60s to wake back
+up (the interstitial's 5s countdown will feel short during a cold start —
+that's expected, not a bug). Fine for testing/early traffic; upgrade to a
+paid instance before pushing real marketing traffic at it. Railway and
+Fly.io are viable alternatives if you'd rather use those — same Dockerfile
+works on both, just without a pre-built blueprint file for this repo.
+
 ## Monetization / ad slots
 
 Ad inventory is deliberately minimal to match the app's design — one native-

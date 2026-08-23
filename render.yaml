@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: omnisaver
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
