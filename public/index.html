@@ -60,6 +60,14 @@
     <h1>Save video or audio from any link</h1>
     <p class="hero__sub">Paste a link — YouTube, Instagram, Facebook, TikTok or X are detected automatically.</p>
 
+    <div class="platform-strip" aria-label="Supported platforms">
+      <img src="icons/youtube.svg" alt="YouTube" class="platform-icon">
+      <img src="icons/instagram.svg" alt="Instagram" class="platform-icon">
+      <img src="icons/facebook.svg" alt="Facebook" class="platform-icon">
+      <img src="icons/tiktok.svg" alt="TikTok" class="platform-icon">
+      <img src="icons/x.svg" alt="X" class="platform-icon">
+    </div>
+
     <form id="resolve-form" class="fetch-form" autocomplete="off">
       <div class="fetch-form__input-row">
         <input
@@ -75,10 +83,17 @@
           <span class="btn-spinner" hidden></span>
         </button>
       </div>
-      <p class="detect-status" id="detect-status" aria-live="polite">
-        <span class="detect-dot" aria-hidden="true"></span>
-        <span id="detect-label">Waiting for a link…</span>
-      </p>
+      <div class="detect-row">
+        <p class="detect-status" id="detect-status" aria-live="polite">
+          <span class="detect-dot" aria-hidden="true"></span>
+          <img class="platform-icon detect-icon" id="detect-icon" alt="" hidden>
+          <span id="detect-label">Waiting for a link…</span>
+        </p>
+        <div class="mode-toggle" id="mode-toggle" hidden role="radiogroup" aria-label="Download as">
+          <button type="button" class="mode-btn is-selected" data-format-mode="video" aria-pressed="true">Video</button>
+          <button type="button" class="mode-btn" data-format-mode="audio" aria-pressed="false">Audio (MP3)</button>
+        </div>
+      </div>
     </form>
 
     <p class="error-msg" id="error-msg" role="alert" hidden></p>
@@ -92,17 +107,22 @@
     </div>
     <div class="results__info">
       <span class="results__platform" id="result-platform-wrap">
-        <span class="detect-dot" aria-hidden="true"></span>
+        <img class="platform-icon" id="result-icon" alt="">
         <span id="result-platform"></span>
       </span>
       <h2 id="result-title"></h2>
       <p class="results__meta" id="result-meta"></p>
 
-      <div class="format-group">
+      <div class="mode-toggle" id="result-mode-toggle" role="radiogroup" aria-label="Download as">
+        <button type="button" class="mode-btn" data-format-mode="video" aria-pressed="false">Video</button>
+        <button type="button" class="mode-btn" data-format-mode="audio" aria-pressed="false">Audio (MP3)</button>
+      </div>
+
+      <div class="format-group" id="video-format-group">
         <h3>Video</h3>
         <div class="format-list" id="video-formats"></div>
       </div>
-      <div class="format-group">
+      <div class="format-group" id="audio-format-group">
         <h3>Audio only</h3>
         <div class="format-list" id="audio-formats">
           <button class="format-btn" data-mode="audio">MP3</button>

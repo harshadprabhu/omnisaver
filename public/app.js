@@ -1,10 +1,11 @@
 const PLATFORM_PATTERNS = [
-  { id: 'youtube', label: 'YouTube', re: /(?:youtube\.com|youtu\.be)/i },
-  { id: 'instagram', label: 'Instagram', re: /instagram\.com/i },
-  { id: 'facebook', label: 'Facebook', re: /(?:facebook\.com|fb\.watch)/i },
-  { id: 'tiktok', label: 'TikTok', re: /tiktok\.com/i },
-  { id: 'twitter', label: 'X / Twitter', re: /(?:twitter\.com|x\.com)/i },
+  { id: 'youtube', label: 'YouTube', icon: 'icons/youtube.svg', re: /(?:youtube\.com|youtu\.be)/i },
+  { id: 'instagram', label: 'Instagram', icon: 'icons/instagram.svg', re: /instagram\.com/i },
+  { id: 'facebook', label: 'Facebook', icon: 'icons/facebook.svg', re: /(?:facebook\.com|fb\.watch)/i },
+  { id: 'tiktok', label: 'TikTok', icon: 'icons/tiktok.svg', re: /tiktok\.com/i },
+  { id: 'twitter', label: 'X / Twitter', icon: 'icons/x.svg', re: /(?:twitter\.com|x\.com)/i },
 ];
+const PLATFORM_BY_ID = Object.fromEntries(PLATFORM_PATTERNS.map((p) => [p.id, p]));
 
 const form = document.getElementById('resolve-form');
 const urlInput = document.getElementById('url-input');
@@ -13,15 +14,21 @@ const btnLabel = fetchBtn.querySelector('.btn-label');
 const btnSpinner = fetchBtn.querySelector('.btn-spinner');
 const errorMsg = document.getElementById('error-msg');
 const detectStatus = document.getElementById('detect-status');
+const detectIcon = document.getElementById('detect-icon');
 const detectLabel = document.getElementById('detect-label');
+const heroModeToggle = document.getElementById('mode-toggle');
+const resultModeToggle = document.getElementById('result-mode-toggle');
 
 const resultsSection = document.getElementById('results');
 const resultMedia = document.querySelector('.results__media');
 const resultThumb = document.getElementById('result-thumb');
 const resultPlatformWrap = document.getElementById('result-platform-wrap');
+const resultIcon = document.getElementById('result-icon');
 const resultPlatform = document.getElementById('result-platform');
 const resultTitle = document.getElementById('result-title');
 const resultMeta = document.getElementById('result-meta');
+const videoFormatGroup = document.getElementById('video-format-group');
+const audioFormatGroup = document.getElementById('audio-format-group');
 const videoFormatsEl = document.getElementById('video-formats');
 const audioFormatsEl = document.getElementById('audio-formats');
 
@@ -31,6 +38,7 @@ const countdownNum = document.getElementById('countdown-num');
 const previewBanner = document.getElementById('preview-banner');
 
 let currentUrl = '';
+let selectedFormatMode = 'video';
 
 (async () => {
   try {
@@ -52,22 +60,44 @@ function updateDetectStatus(value) {
   const trimmed = value.trim();
   const match = detectPlatform(trimmed);
 
-  if (!trimmed) {
-    detectStatus.classList.remove('is-active');
-    detectStatus.removeAttribute('data-platform');
-    detectLabel.textContent = 'Waiting for a link…';
-  } else if (match) {
+  if (match) {
     detectStatus.classList.add('is-active');
     detectStatus.dataset.platform = match.id;
+    detectIcon.src = match.icon;
+    detectIcon.alt = match.label;
+    detectIcon.hidden = false;
     detectLabel.textContent = `${match.label} detected`;
+    heroModeToggle.hidden = false;
   } else {
     detectStatus.classList.remove('is-active');
     detectStatus.removeAttribute('data-platform');
-    detectLabel.textContent = "Doesn't look like a supported link yet";
+    detectIcon.hidden = true;
+    detectLabel.textContent = trimmed ? "Doesn't look like a supported link yet" : 'Waiting for a link…';
+    heroModeToggle.hidden = true;
   }
 }
 
 urlInput.addEventListener('input', () => updateDetectStatus(urlInput.value));
+
+function setFormatMode(mode) {
+  selectedFormatMode = mode;
+  [heroModeToggle, resultModeToggle].forEach((toggle) => {
+    toggle.querySelectorAll('.mode-btn').forEach((btn) => {
+      const isSelected = btn.dataset.formatMode === mode;
+      btn.classList.toggle('is-selected', isSelected);
+      btn.setAttribute('aria-pressed', String(isSelected));
+    });
+  });
+  videoFormatGroup.hidden = mode !== 'video';
+  audioFormatGroup.hidden = mode !== 'audio';
+}
+
+[heroModeToggle, resultModeToggle].forEach((toggle) => {
+  toggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if (btn) setFormatMode(btn.dataset.formatMode);
+  });
+});
 
 function setLoading(isLoading) {
   fetchBtn.disabled = isLoading;
@@ -119,8 +149,13 @@ form.addEventListener('submit', async (e) => {
 });
 
 function renderResults(data) {
+  const platform = PLATFORM_BY_ID[data.platform];
   resultPlatform.textContent = data.platformLabel;
   resultPlatformWrap.dataset.platform = data.platform;
+  if (platform) {
+    resultIcon.src = platform.icon;
+    resultIcon.alt = platform.label;
+  }
   resultTitle.textContent = data.title;
   if (data.thumbnail) {
     resultThumb.onerror = () => { resultMedia.hidden = true; };
@@ -161,6 +196,7 @@ function renderResults(data) {
 
   audioFormatsEl.querySelector('[data-mode="audio"]').onclick = () => startDownload({ mode: 'audio' });
 
+  setFormatMode(selectedFormatMode);
   resultsSection.hidden = false;
   resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

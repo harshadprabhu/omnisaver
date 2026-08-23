@@ -124,6 +124,14 @@ To wire one in, drop that network's script tag in `<head>` of
 `public/index.html` and replace the placeholder `<div class="ad-slot">`
 contents with that network's ad unit code/iframe.
 
+## Platform icons
+
+`public/icons/*.svg` are small, hand-built icon marks in each platform's
+brand color (not pulled/copied logo files) used solely to indicate "this
+link type is supported" — the same nominative-use pattern used by countless
+share buttons across the web. They don't imply any partnership with or
+endorsement by YouTube, Instagram, Facebook, TikTok, or X.
+
 ## Legal note
 
 This tool only fetches what the target platform's page already serves
