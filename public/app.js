@@ -25,7 +25,21 @@ const audioFormatsEl = document.getElementById('audio-formats');
 const interstitial = document.getElementById('interstitial');
 const countdownNum = document.getElementById('countdown-num');
 
+const previewBanner = document.getElementById('preview-banner');
+
 let currentUrl = '';
+
+(async () => {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch('/api/health', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('unhealthy');
+  } catch {
+    previewBanner.hidden = false;
+  }
+})();
 
 function detectPlatform(value) {
   return PLATFORM_PATTERNS.find((p) => p.re.test(value))?.id || null;
@@ -103,9 +117,10 @@ function renderResults(data) {
   resultMeta.textContent = parts.join(' · ');
 
   videoFormatsEl.innerHTML = '';
+  const heightOf = (f) => parseInt(f.resolution, 10) || 0;
   const videoFormats = data.formats
     .filter((f) => f.hasVideo)
-    .sort((a, b) => (b.resolution || '').localeCompare(a.resolution || ''));
+    .sort((a, b) => heightOf(b) - heightOf(a));
 
   if (videoFormats.length === 0) {
     videoFormatsEl.innerHTML = '<span class="results__meta">No separate video qualities — use Fetch Best below.</span>';
