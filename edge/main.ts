@@ -8,9 +8,14 @@
 // Frontend calls POST /api/resolve with { url }. Response shape matches
 // what public/app.js expects (see README for the contract).
 
+import { serveDir } from "jsr:@std/http@1/file-server";
 import { resolveTiktok } from "./extractors/tiktok.ts";
 import { resolveTwitter } from "./extractors/twitter.ts";
 import { resolveInstagram } from "./extractors/instagram.ts";
+
+// Path to the static frontend, computed relative to this file so it
+// works both locally (deno run) and on Deno Deploy (bundled).
+const PUBLIC_DIR = new URL("../public", import.meta.url).pathname;
 
 // Extractors return everything except the platform id/label; those are
 // stamped on by the dispatcher below based on which pattern matched.
@@ -121,5 +126,8 @@ Deno.serve(async (req) => {
     }
   }
 
-  return new Response("Not found", { status: 404, headers: CORS_HEADERS });
+  // Anything that isn't an /api route falls through to the static
+  // frontend under public/. When frontend and API share an origin we
+  // don't need the CORS headers here — serveDir sets its own.
+  return serveDir(req, { fsRoot: PUBLIC_DIR, quiet: true });
 });
