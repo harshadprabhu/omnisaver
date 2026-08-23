@@ -12,10 +12,11 @@
   --radius:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
@@ -97,6 +98,16 @@ a{color:inherit;text-decoration:none}
 }
 .error-msg{color:var(--danger);margin-top:14px;font-size:14px}
 
+.trust-badges{
+  display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:20px;list-style:none;
+}
+.trust-badges li{
+  font-size:12.5px;color:var(--text-dim);display:flex;align-items:center;gap:6px;
+}
+.trust-badges li::before{
+  content:"✓";color:var(--accent);font-weight:700;
+}
+
 /* Results */
 .results{display:flex;gap:24px;flex-wrap:wrap}
 .results__media{flex:0 0 220px}
@@ -119,10 +130,24 @@ a{color:inherit;text-decoration:none}
 
 /* How it works / FAQ */
 .how-it-works ol{padding-left:20px;display:flex;flex-direction:column;gap:8px}
-.how-it-works h2,.faq h2{font-size:20px;margin-bottom:14px}
+.how-it-works h2,.faq h2,.platforms h2,.why h2{font-size:20px;margin-bottom:14px}
 .faq details{border-top:1px solid var(--border);padding:12px 0}
 .faq summary{cursor:pointer;font-weight:600}
 .faq p{color:var(--text-dim);margin-top:8px;font-size:14px}
+
+/* Supported platforms */
+.platform-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;
+}
+.platform-grid h3{font-size:15px;margin-bottom:6px}
+.platform-grid p{color:var(--text-dim);font-size:13.5px}
+
+/* Why OmniSaver */
+.why-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;
+}
+.why-grid h3{font-size:15px;margin-bottom:6px}
+.why-grid p{color:var(--text-dim);font-size:13.5px}
 
 /* Ad slots */
 .ad-slot{

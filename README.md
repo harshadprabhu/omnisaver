@@ -34,6 +34,29 @@ run somewhere reachable 24/7 — Render, Railway, Fly.io, a VPS, or any host
 that runs the included `Dockerfile`. Static hosts (GitHub Pages, Netlify
 static, etc.) won't work.
 
+## SEO
+
+`public/index.html` ships with the on-page fundamentals: a keyword-relevant
+title/description, Open Graph + Twitter card tags, a generated `og.png`
+(1200×630 branded preview image), favicons, and JSON-LD structured data
+(`SoftwareApplication`, `FAQPage`, `WebSite`, `BreadcrumbList`). `robots.txt`
+and `sitemap.xml` are in `public/` too, so they're served at the site root.
+
+**Before going live, replace every occurrence of the placeholder domain
+`https://omnisaver.app`** (in `index.html`'s `<head>`, `robots.txt`, and
+`sitemap.xml`) with your real domain — the canonical URL, Open Graph tags,
+and sitemap are all wrong until that's done, which actively hurts indexing.
+
+None of this *guarantees* ranking — this niche (fastvideosave, snapinsta,
+ssstik, y2mate, etc.) has entrenched competitors with years of backlinks and
+domain authority. On-page SEO gets you found and indexed correctly; it
+doesn't substitute for backlinks, content depth over time, and site speed
+once you have real traffic. One concrete next step once you have a domain:
+consider dedicated landing pages per platform (`/instagram-reel-downloader`,
+`/youtube-video-downloader`, etc.) that each link back to this same tool —
+long-tail keyword pages like that tend to outrank a single page competing
+for every term at once.
+
 ## Local setup
 
 ```bash
