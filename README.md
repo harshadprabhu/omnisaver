@@ -1,11 +1,30 @@
 # OmniSaver
 
 A multiplatform video/reel/audio downloader. Paste a link, it auto-detects the
-platform (YouTube, Instagram, Facebook, TikTok, X/Twitter), and offers MP4
-(by quality) or MP3 (audio-only) downloads. Includes ad slot placeholders for
-monetization.
+platform, and offers MP4 (by quality) or MP3 (audio-only) downloads. Includes
+ad slot placeholders for monetization.
 
-## How it works
+## Two backends, one frontend
+
+The frontend (`public/`) always calls a `/api/resolve` endpoint and hands
+the browser the resulting direct CDN URL. Which backend answers is
+configurable via `window.OMNISAVER_EDGE_BASE` (see `public/config.js`):
+
+| Backend | Where it runs | Platforms supported | Cost |
+|---|---|---|---|
+| **Edge extractors** (`edge/`) | Deno Deploy free tier — no card, 1M req/mo, 100 GB egress. TypeScript, no subprocesses. | TikTok, X/Twitter, public Instagram Reels | Free |
+| **yt-dlp proxy** (`server/`) | Any Node/Docker host. Uses yt-dlp; can proxy full byte stream. | All 5 platforms including YouTube & Facebook | Bandwidth-dependent |
+
+**Stage 1 (this repo's default deploy):** Edge extractors on Deno Deploy.
+Bytes flow platform → user directly, our server sees ~200KB of platform
+HTML per request. Fits comfortably in Deno's free tier at real scale.
+
+**Stage 2 (later, when ad revenue justifies it):** Bring the yt-dlp
+backend up on a paid host (Hetzner ~€5/mo works fine) for the platforms
+edge extraction can't handle — YouTube's signed URLs and Facebook's
+anti-scraping both require a proxying backend, not just extraction.
+
+## How the extractors actually work
 
 - **Frontend** (`public/`) — plain HTML/CSS/JS. Detects the platform
   client-side (for instant UI feedback) and calls the backend to do the
@@ -96,37 +115,55 @@ docker build -t omnisaver .
 docker run -p 3000:3000 omnisaver
 ```
 
-## Deploy the real backend (make downloads actually work)
+## Deploy Stage 1 (Deno Deploy, free forever, no card)
 
-The GitHub Pages preview (`.github/workflows/deploy-pages.yml`) is
-static-only and deliberately can't run `yt-dlp` — see **How it works**
-above for why that's a hard constraint, not a config gap. To get working
-downloads on a real URL, the backend needs to run somewhere as a live
-process. This repo includes a Render Blueprint (`render.yaml`) for the
-fastest path to that, free to start:
+The `edge/` folder is a TypeScript Deno Deploy project. Deno Deploy is
+one of the few managed platforms with a truly free tier that doesn't
+require a credit card at signup.
 
-1. Go to **https://dashboard.render.com/blueprints** (sign up/log in with
-   GitHub if you haven't already).
-2. Click **New Blueprint Instance**, pick the `omnisaver` repo. Render reads
-   `render.yaml` automatically — it builds the existing `Dockerfile` (which
-   already installs `yt-dlp` + `ffmpeg`) and wires up the `/api/health`
-   check.
-3. Click **Apply** / **Deploy**. First build takes a few minutes.
+**1. Deploy the edge service:**
 
-That connect-and-click step needs to happen from your Render account — no
-API access exists for me to do it from here (same reason the GitHub Pages
-toggle earlier needed you directly). Once it's live, tell me the URL Render
-gives you (`https://omnisaver-xxxx.onrender.com`) and I'll verify it end to
-end — resolve a real link, download a file, confirm formats — and wire the
-GitHub Pages preview and canonical URLs to point at it.
+- Go to **https://dash.deno.com/new_project** and sign in with GitHub.
+- Pick the `omnisaver` repo.
+- Set the **entrypoint** to `edge/main.ts`.
+- No install/build step needed. Deno installs remote imports at first run.
+- Click **Deploy**. You get a URL like `https://omnisaver-xxxxx.deno.dev`.
 
-**Free tier caveat**: Render's free web services spin down after 15 minutes
-idle, so the first request after a quiet period takes ~30-60s to wake back
-up (the interstitial's 5s countdown will feel short during a cold start —
-that's expected, not a bug). Fine for testing/early traffic; upgrade to a
-paid instance before pushing real marketing traffic at it. Railway and
-Fly.io are viable alternatives if you'd rather use those — same Dockerfile
-works on both, just without a pre-built blueprint file for this repo.
+**2. Wire the GitHub Pages frontend to point at it:**
+
+- In this repo on GitHub → Settings → Secrets and variables → Actions →
+  Variables → New repository variable
+- Name: `OMNISAVER_EDGE_BASE`
+- Value: your Deno Deploy URL (e.g. `https://omnisaver-xxxxx.deno.dev`)
+- Trigger the Pages workflow (any push to main, or the "Run workflow"
+  button on the Actions page).
+
+The build injects the URL into `config.js` and the frontend calls the
+edge service instead of showing the "preview build" banner. That's it.
+
+**Free-tier reality:** Deno Deploy free tier is 1 million requests/month
+and 100 GB egress/month. Because we only proxy ~200 KB of platform HTML
+per resolve (the video bytes flow directly from the platform's CDN to
+the user, not through us), 100 GB of egress on our side is roughly
+**500,000 downloads/month** worth of traffic. Well past the point where
+ad revenue can fund a proper Stage 2 backend.
+
+## Stage 2: yt-dlp proxy backend (optional, for YouTube + Facebook)
+
+When you're ready to add the platforms edge extraction can't reach,
+deploy the `server/` Node backend to any Docker host. The `Dockerfile`
+already bakes in `yt-dlp` and `ffmpeg`. Options:
+
+- **Hetzner CX22** (~€4.51/month, 20TB bandwidth). Requires a card. Best
+  bang-for-buck at any real scale — see the cost analysis in the commit
+  history for the math.
+- **Render** (`render.yaml` in this repo). Free tier available, but
+  spins down after 15min idle (cold starts) and free-tier bandwidth is
+  low. Fine for early testing.
+- **Fly.io / Railway / Koyeb** — same Dockerfile works, all require a card.
+
+Once Stage 2 is live, point `OMNISAVER_EDGE_BASE` at its URL instead of
+the Deno Deploy URL, or run both and route by platform.
 
 ## Monetization / ad slots
 

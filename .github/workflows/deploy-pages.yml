@@ -24,6 +24,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Prepare preview build
+        env:
+          EDGE_BASE: ${{ vars.OMNISAVER_EDGE_BASE }}
         run: |
           mkdir -p _site
           cp -r public/. _site/
@@ -32,6 +34,13 @@ jobs:
           # once one is live.
           sed -i 's#<meta name="robots" content="[^"]*">#<meta name="robots" content="noindex,nofollow">#' _site/index.html
           printf 'User-agent: *\nDisallow: /\n' > _site/robots.txt
+          # If the OMNISAVER_EDGE_BASE repo variable is set (Settings →
+          # Secrets and variables → Actions → Variables), point the
+          # deployed frontend at that Deno Deploy URL so real downloads
+          # work. Otherwise stay in "preview banner" mode.
+          if [ -n "$EDGE_BASE" ]; then
+            printf "window.OMNISAVER_EDGE_BASE = %s;\n" "$(printf '%s' "$EDGE_BASE" | jq -Rs .)" > _site/config.js
+          fi
 
       - uses: actions/configure-pages@v5
         with:

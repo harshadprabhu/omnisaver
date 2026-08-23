@@ -136,6 +136,12 @@ app.post('/api/resolve', resolveLimiter, async (req, res) => {
         filesize: f.filesize || f.filesize_approx || null,
         hasVideo: !!(f.vcodec && f.vcodec !== 'none'),
         hasAudio: !!(f.acodec && f.acodec !== 'none'),
+        // Direct CDN URL from yt-dlp; the frontend hands this to the
+        // browser so bytes stream platform → user without touching us.
+        // For YouTube the URL is signed and IP-bound, which limits how
+        // useful this is for a same-origin visitor — hence the Stage 2
+        // /api/download proxy fallback still living below.
+        url: f.url,
       }))
       .filter((f) => {
         const key = `${f.resolution}-${f.hasVideo}-${f.hasAudio}`;

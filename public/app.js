@@ -1,3 +1,15 @@
+// Edge-service base URL. Empty = same-origin (which is the case for local
+// dev with the Node server, and the eventual Stage-2 backend). To point
+// at Deno Deploy from GitHub Pages, set this to the deployed URL, e.g.
+// "https://omnisaver.deno.dev".
+const EDGE_BASE = window.OMNISAVER_EDGE_BASE || '';
+
+// Coming-soon platforms are detected in the UI (so the strip stays
+// visually complete) but the resolve request is short-circuited with a
+// friendly message rather than round-tripping to a service that would
+// just reject them.
+const COMING_SOON = new Set(['youtube', 'facebook']);
+
 const PLATFORM_PATTERNS = [
   { id: 'youtube', label: 'YouTube', icon: 'icons/youtube.svg', re: /(?:youtube\.com|youtu\.be)/i },
   { id: 'instagram', label: 'Instagram', icon: 'icons/instagram.svg', re: /instagram\.com/i },
@@ -44,7 +56,7 @@ let selectedFormatMode = 'video';
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2500);
-    const res = await fetch('/api/health', { signal: controller.signal });
+    const res = await fetch(`${EDGE_BASE}/api/health`, { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error('unhealthy');
   } catch {
@@ -66,8 +78,13 @@ function updateDetectStatus(value) {
     detectIcon.src = match.icon;
     detectIcon.alt = match.label;
     detectIcon.hidden = false;
-    detectLabel.textContent = `${match.label} detected`;
-    heroModeToggle.hidden = false;
+    if (COMING_SOON.has(match.id)) {
+      detectLabel.textContent = `${match.label} — coming soon`;
+      heroModeToggle.hidden = true;
+    } else {
+      detectLabel.textContent = `${match.label} detected`;
+      heroModeToggle.hidden = false;
+    }
   } else {
     detectStatus.classList.remove('is-active');
     detectStatus.removeAttribute('data-platform');
@@ -129,9 +146,15 @@ form.addEventListener('submit', async (e) => {
   showError('');
   resultsSection.hidden = true;
 
+  const match = detectPlatform(url);
+  if (match && COMING_SOON.has(match.id)) {
+    showError(`${match.label} support is coming in a later release. TikTok, X/Twitter and public Instagram Reels work today.`);
+    return;
+  }
+
   setLoading(true);
   try {
-    const res = await fetch('/api/resolve', {
+    const res = await fetch(`${EDGE_BASE}/api/resolve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
@@ -177,38 +200,44 @@ function renderResults(data) {
   const videoFormats = data.formats
     .filter((f) => f.hasVideo)
     .sort((a, b) => heightOf(b) - heightOf(a));
+  const audioFormat = data.formats.find((f) => !f.hasVideo && f.hasAudio);
 
   if (videoFormats.length === 0) {
-    const btn = document.createElement('button');
-    btn.className = 'format-btn';
-    btn.textContent = 'Best available';
-    btn.addEventListener('click', () => startDownload({ mode: 'video' }));
-    videoFormatsEl.appendChild(btn);
+    videoFormatsEl.textContent = 'No video formats available for this post.';
   } else {
     videoFormats.slice(0, 6).forEach((f) => {
-      const btn = document.createElement('button');
-      btn.className = 'format-btn';
-      btn.textContent = `${f.resolution || f.ext}${formatSize(f.filesize)}`;
-      btn.addEventListener('click', () => startDownload({ mode: 'video', formatId: f.format_id }));
-      videoFormatsEl.appendChild(btn);
+      videoFormatsEl.appendChild(makeDownloadLink(f, f.resolution || f.ext));
     });
   }
 
-  audioFormatsEl.querySelector('[data-mode="audio"]').onclick = () => startDownload({ mode: 'audio' });
+  audioFormatsEl.innerHTML = '';
+  if (audioFormat) {
+    audioFormatsEl.appendChild(makeDownloadLink(audioFormat, 'MP3'));
+  } else {
+    audioFormatsEl.textContent = 'No standalone audio track for this post.';
+  }
 
   setFormatMode(selectedFormatMode);
   resultsSection.hidden = false;
   resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function startDownload({ mode, formatId }) {
-  runInterstitial(() => {
-    const params = new URLSearchParams({ url: currentUrl, mode });
-    if (formatId) params.set('format_id', formatId);
-    const a = document.createElement('a');
-    a.href = `/api/download?${params.toString()}`;
-    a.click();
-  });
+// Direct <a> to the platform's CDN URL. Rendered as a real link with an
+// href (not a button) so users can right-click → "Save link as…" if the
+// browser insists on playing the video inline instead of downloading,
+// which some CDNs cause when they don't send Content-Disposition:
+// attachment. `download` gives us the desired behavior in Chromium /
+// Firefox for same-registered-suffix downloads and is harmless otherwise.
+function makeDownloadLink(format, label) {
+  const a = document.createElement('a');
+  a.className = 'format-btn';
+  a.href = format.url;
+  a.rel = 'noopener noreferrer';
+  a.target = '_blank';
+  a.download = `omnisaver.${format.ext || 'mp4'}`;
+  a.textContent = `${label}${formatSize(format.filesize)}`;
+  a.addEventListener('click', () => runInterstitial());
+  return a;
 }
 
 function runInterstitial(onDone) {
@@ -221,7 +250,7 @@ function runInterstitial(onDone) {
     if (n <= 0) {
       clearInterval(timer);
       interstitial.hidden = true;
-      onDone();
+      if (onDone) onDone();
     }
   }, 1000);
 }

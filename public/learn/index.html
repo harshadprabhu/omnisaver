@@ -36,7 +36,7 @@
    {"@type":"ListItem","position":2,"name":"How it works","item":"https://omnisaver.app/learn/"}
  ]},
  {"@type":"FAQPage","mainEntity":[
-  {"@type":"Question","name":"Which platforms are supported?","acceptedAnswer":{"@type":"Answer","text":"YouTube, Instagram, Facebook and TikTok links work end-to-end today. X/Twitter detection is on, with download support rolling out as we harden it against that platform's frequent page changes."}},
+  {"@type":"Question","name":"Which platforms are supported?","acceptedAnswer":{"@type":"Answer","text":"TikTok, X/Twitter, and public Instagram Reels work end-to-end today. YouTube and Facebook are marked coming soon and hand the user a clear message rather than attempting a download."}},
   {"@type":"Question","name":"Is OmniSaver free to use?","acceptedAnswer":{"@type":"Answer","text":"Yes. Paste a link, pick a format, and download — no account, subscription or payment required."}},
   {"@type":"Question","name":"Do you store the videos I download?","acceptedAnswer":{"@type":"Answer","text":"No. Every download is streamed straight from the source to your device as it converts; nothing is saved on our servers before, during or after."}},
   {"@type":"Question","name":"Can I download audio only, as MP3?","acceptedAnswer":{"@type":"Answer","text":"Yes. Once a link is fetched, choose the MP3 option under \"Audio only\" to get just the sound track instead of the full video."}},
@@ -83,24 +83,24 @@
     <h2 id="platforms-heading">Supported platforms</h2>
     <div class="platform-grid">
       <article>
-        <h3><img src="../icons/youtube.svg" alt="" class="platform-icon">YouTube video downloader</h3>
-        <p>Paste a YouTube video or Shorts link to pull it down as MP4 in whatever resolutions the video was uploaded in, or strip out just the audio as MP3.</p>
-      </article>
-      <article>
-        <h3><img src="../icons/instagram.svg" alt="" class="platform-icon">Instagram Reels downloader</h3>
-        <p>Works with public Reels and video posts — paste the share link from the Instagram app or website to get an MP4 you can save straight to your camera roll.</p>
-      </article>
-      <article>
-        <h3><img src="../icons/facebook.svg" alt="" class="platform-icon">Facebook video downloader</h3>
-        <p>Save public Facebook videos and Reels by pasting the post or watch link — no Facebook login needed on your end.</p>
-      </article>
-      <article>
         <h3><img src="../icons/tiktok.svg" alt="" class="platform-icon">TikTok video downloader</h3>
-        <p>Paste a TikTok link to fetch the video as MP4, or grab the sound on its own as MP3.</p>
+        <p><strong>Working today.</strong> Paste a TikTok link to fetch the video as MP4 or grab the sound on its own as MP3. Short URLs (vm.tiktok.com) are followed automatically.</p>
       </article>
       <article>
         <h3><img src="../icons/x.svg" alt="" class="platform-icon">X (Twitter) video downloader</h3>
-        <p>Platform detection for X/Twitter links is live; full download support is being hardened against X's frequent page changes and is rolling out.</p>
+        <p><strong>Working today for public tweets.</strong> Paste a tweet link and OmniSaver pulls the highest-quality MP4 variant Twitter serves. Login-gated or age-restricted tweets are skipped.</p>
+      </article>
+      <article>
+        <h3><img src="../icons/instagram.svg" alt="" class="platform-icon">Instagram Reels downloader</h3>
+        <p><strong>Working today for public Reels.</strong> Paste a public Reel or video post link and OmniSaver extracts the MP4 URL from Instagram's own Open Graph tags. Carousels and login-gated posts aren't supported yet.</p>
+      </article>
+      <article>
+        <h3><img src="../icons/youtube.svg" alt="" class="platform-icon">YouTube video downloader</h3>
+        <p><strong>Coming soon.</strong> YouTube's stream URLs are cryptographically signed and IP-bound, so the direct-link approach that keeps OmniSaver free doesn't work for it. YouTube support requires a proxying backend, arriving in a later release.</p>
+      </article>
+      <article>
+        <h3><img src="../icons/facebook.svg" alt="" class="platform-icon">Facebook video downloader</h3>
+        <p><strong>Coming soon.</strong> Facebook's public video pages have stronger anti-scraping than the other platforms; robust extraction is being developed and will ship in a later release.</p>
       </article>
     </div>
   </section>
@@ -125,7 +125,7 @@
     <h2>FAQ</h2>
     <details open>
       <summary>Which platforms are supported?</summary>
-      <p>YouTube, Instagram, Facebook and TikTok links work end-to-end today. X/Twitter detection is on, with download support rolling out as we harden it against that platform's frequent page changes.</p>
+      <p>TikTok, X/Twitter, and public Instagram Reels work end-to-end today. YouTube and Facebook are marked "coming soon" and hand the user a clear message rather than attempting a download — see the Supported Platforms section above for why.</p>
     </details>
     <details>
       <summary>Is OmniSaver free to use?</summary>

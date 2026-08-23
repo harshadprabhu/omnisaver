@@ -147,8 +147,9 @@ h1{
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* Supported-platform icon strip */
-.platform-strip{display:flex;gap:8px;margin-bottom:20px}
+.platform-strip{display:flex;gap:8px;margin-bottom:20px;align-items:center}
 .platform-icon{width:20px;height:20px;border-radius:6px;display:block;flex-shrink:0}
+.platform-icon--coming{opacity:0.35;filter:grayscale(0.6)}
 
 /* Signature: live platform detection status */
 .detect-row{
@@ -208,9 +209,11 @@ h1{
 .format-btn{
   background:var(--surface-2);border:1px solid var(--border);color:var(--ink);
   padding:9px 13px;border-radius:var(--radius-sm);font-size:13px;font-family:var(--font-mono);cursor:pointer;
+  text-decoration:none;display:inline-flex;align-items:center;
   transition:border-color .15s ease,background .15s ease;
 }
 .format-btn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.format-btn:visited{color:var(--ink)}
 
 /* Ad slot — one native-feeling unit, not a placeholder box */
 .ad-slot{
