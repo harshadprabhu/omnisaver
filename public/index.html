@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OmniSaver — Download Videos, Reels &amp; Audio from Any Platform</title>
+<meta name="description" content="Paste a link from YouTube, Instagram, Facebook, TikTok or X — OmniSaver detects the platform automatically and gives you MP4 or MP3 download options.">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark">⬇</span>
+      <span class="brand-name">OmniSaver</span>
+    </a>
+    <p class="tagline">One box. Every platform. MP4 or MP3.</p>
+  </div>
+</header>
+
+<!-- AD SLOT: top leaderboard banner. Replace with your ad network's tag. -->
+<div class="ad-slot ad-slot--leaderboard" id="ad-top" aria-label="Advertisement">
+  <span class="ad-slot__label">Advertisement</span>
+</div>
+
+<main class="wrap layout">
+  <div class="layout__main">
+
+    <section class="hero card">
+      <h1>Download reels, videos &amp; sound — from any link</h1>
+      <p class="hero__sub">Paste a link below. We auto-detect whether it's YouTube, Instagram, Facebook, TikTok or X.</p>
+
+      <form id="resolve-form" class="fetch-form" autocomplete="off">
+        <div class="fetch-form__input-row">
+          <input
+            id="url-input"
+            type="url"
+            inputmode="url"
+            placeholder="Paste a video / reel link here…"
+            required
+            aria-label="Video link"
+          >
+          <button type="submit" id="fetch-btn">
+            <span class="btn-label">Fetch</span>
+            <span class="btn-spinner" hidden></span>
+          </button>
+        </div>
+        <div class="platform-row" id="platform-row" aria-live="polite">
+          <span class="platform-chip" data-platform="youtube">YouTube</span>
+          <span class="platform-chip" data-platform="instagram">Instagram</span>
+          <span class="platform-chip" data-platform="facebook">Facebook</span>
+          <span class="platform-chip" data-platform="tiktok">TikTok</span>
+          <span class="platform-chip" data-platform="twitter">X / Twitter</span>
+        </div>
+      </form>
+
+      <p class="error-msg" id="error-msg" role="alert" hidden></p>
+    </section>
+
+    <section class="results card" id="results" hidden>
+      <div class="results__media">
+        <img id="result-thumb" alt="" class="results__thumb">
+      </div>
+      <div class="results__info">
+        <span class="results__platform" id="result-platform"></span>
+        <h2 id="result-title"></h2>
+        <p class="results__meta" id="result-meta"></p>
+
+        <div class="format-group">
+          <h3>Video (MP4)</h3>
+          <div class="format-list" id="video-formats"></div>
+        </div>
+        <div class="format-group">
+          <h3>Audio only</h3>
+          <div class="format-list" id="audio-formats">
+            <button class="format-btn" data-mode="audio">🎧 MP3 — extract audio</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AD SLOT: in-content rectangle, appears once results are shown. -->
+    <div class="ad-slot ad-slot--rectangle" id="ad-incontent" aria-label="Advertisement">
+      <span class="ad-slot__label">Advertisement</span>
+    </div>
+
+    <section class="card how-it-works">
+      <h2>How it works</h2>
+      <ol>
+        <li><strong>Copy</strong> the link to a reel, video or post from YouTube, Instagram, Facebook, TikTok or X.</li>
+        <li><strong>Paste</strong> it above — OmniSaver identifies the platform automatically, no menu needed.</li>
+        <li><strong>Choose</strong> a quality (HD/SD video) or MP3 audio, and download directly to your device.</li>
+      </ol>
+    </section>
+
+    <section class="card faq">
+      <h2>FAQ</h2>
+      <details>
+        <summary>Which platforms are supported?</summary>
+        <p>YouTube, Instagram, Facebook and TikTok links work end-to-end today. X/Twitter detection is on, with download support rolling out as we harden it against that platform's frequent page changes.</p>
+      </details>
+      <details>
+        <summary>Can I download WhatsApp videos this way?</summary>
+        <p>No — WhatsApp doesn't expose a public link for shared media the way the platforms above do, so there's nothing for a URL-based tool to fetch. Forwarding or saving from within WhatsApp itself is the only option there.</p>
+      </details>
+      <details>
+        <summary>Is this legal?</summary>
+        <p>Only download content you own, have permission to use, or that's covered by the platform's own license terms (e.g. explicit "save" features). You're responsible for complying with each platform's terms of service and applicable copyright law.</p>
+      </details>
+    </section>
+
+  </div>
+
+  <!-- AD SLOT: sticky sidebar, desktop only. -->
+  <aside class="layout__sidebar">
+    <div class="ad-slot ad-slot--sidebar" id="ad-sidebar" aria-label="Advertisement">
+      <span class="ad-slot__label">Advertisement</span>
+    </div>
+  </aside>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <!-- AD SLOT: footer banner. -->
+    <div class="ad-slot ad-slot--leaderboard" id="ad-footer" aria-label="Advertisement">
+      <span class="ad-slot__label">Advertisement</span>
+    </div>
+    <p class="disclaimer">
+      OmniSaver is a personal-use download tool. You are responsible for only downloading content you have the
+      right to use, and for complying with each platform's terms of service and applicable copyright law.
+    </p>
+  </div>
+</footer>
+
+<!-- Interstitial shown briefly before a download starts; this is also an ad slot. -->
+<div class="interstitial" id="interstitial" hidden>
+  <div class="interstitial__box">
+    <p class="interstitial__title">Preparing your download…</p>
+    <div class="ad-slot ad-slot--interstitial" aria-label="Advertisement">
+      <span class="ad-slot__label">Advertisement</span>
+    </div>
+    <p class="interstitial__countdown">Your download starts in <span id="countdown-num">5</span>s</p>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
