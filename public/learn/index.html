@@ -36,7 +36,8 @@
    {"@type":"ListItem","position":2,"name":"How it works","item":"https://omnisaver.app/learn/"}
  ]},
  {"@type":"FAQPage","mainEntity":[
-  {"@type":"Question","name":"Which platforms are supported?","acceptedAnswer":{"@type":"Answer","text":"TikTok, X/Twitter, and public Instagram Reels work end-to-end today. YouTube and Facebook are marked coming soon and hand the user a clear message rather than attempting a download."}},
+  {"@type":"Question","name":"Which platforms are supported?","acceptedAnswer":{"@type":"Answer","text":"The bookmarklet handles TikTok, Instagram, X/Twitter and Facebook. Pasting a link handles TikTok, plus public posts on Instagram and X. YouTube isn't supported either way — it serves video and audio as separate signature-locked streams that need to be muxed back together."}},
+  {"@type":"Question","name":"What's the difference between the bookmarklet and pasting a link?","acceptedAnswer":{"@type":"Answer","text":"The bookmarklet runs inside the platform's own page in your browser, so it can see anything you can see and the file downloads straight from the platform to your device. Pasting a link sends the work to our server, which isn't logged in anywhere, so it only reaches publicly visible posts and the file passes through us on the way to you."}},
   {"@type":"Question","name":"Is OmniSaver free to use?","acceptedAnswer":{"@type":"Answer","text":"Yes. Paste a link, pick a format, and download — no account, subscription or payment required."}},
   {"@type":"Question","name":"Do you store the videos I download?","acceptedAnswer":{"@type":"Answer","text":"No. Every download is streamed straight from the source to your device as it converts; nothing is saved on our servers before, during or after."}},
   {"@type":"Question","name":"Can I download audio only, as MP3?","acceptedAnswer":{"@type":"Answer","text":"Yes. Once a link is fetched, choose the MP3 option under \"Audio only\" to get just the sound track instead of the full video."}},
@@ -71,12 +72,29 @@
   </section>
 
   <section class="content-card how-it-works">
-    <h2>Three steps</h2>
+    <h2>Two ways to save</h2>
+    <p style="color:var(--ink-dim);font-size:13.5px;margin-bottom:14px">
+      The bookmarklet is the one to use if you can — it's faster, reaches content
+      a server can't, and the file never passes through anyone else's computer.
+    </p>
     <ol>
-      <li><strong>Copy</strong> the link to a reel, video or post from YouTube, Instagram, Facebook, TikTok or X.</li>
-      <li><strong>Paste</strong> it into OmniSaver — the platform is identified automatically, no menu needed.</li>
-      <li><strong>Choose</strong> a quality (HD/SD video) or MP3 audio, and download directly to your device.</li>
+      <li><strong>Bookmarklet (recommended).</strong> Drag the "Save with OmniSaver" button to your bookmarks bar once. Then open any TikTok, Instagram, X or Facebook video and click the bookmark — a small panel appears with the available qualities.</li>
+      <li><strong>Paste a link.</strong> No setup, works on phones. Paste a URL on the home page and our server fetches it for you. Limited to publicly visible posts, since our server isn't logged in to anything.</li>
     </ol>
+  </section>
+
+  <section class="content-card">
+    <h2>Why the bookmarklet reaches more</h2>
+    <p style="color:var(--ink-dim);font-size:13.5px">
+      When our server requests an Instagram page it arrives from a data-centre IP
+      with no account attached, and Instagram answers with a login wall. Your own
+      browser arrives from a home connection already signed in, so it gets the real
+      page. The bookmarklet runs inside that page, reads the video URL the platform
+      already loaded, and fetches the file with your session — which is also why the
+      platform's CDN accepts the request. The bytes travel from the platform straight
+      to your device; OmniSaver never sees them, and there's no upload, no queue and
+      no file sitting on a server somewhere.
+    </p>
   </section>
 
   <section class="content-card platforms" aria-labelledby="platforms-heading">
@@ -84,23 +102,23 @@
     <div class="platform-grid">
       <article>
         <h3><img src="../icons/tiktok.svg" alt="" class="platform-icon">TikTok video downloader</h3>
-        <p><strong>Working today.</strong> Paste a TikTok link to fetch the video as MP4 or grab the sound on its own as MP3. Short URLs (vm.tiktok.com) are followed automatically.</p>
-      </article>
-      <article>
-        <h3><img src="../icons/x.svg" alt="" class="platform-icon">X (Twitter) video downloader</h3>
-        <p><strong>Working today for public tweets.</strong> Paste a tweet link and OmniSaver pulls the highest-quality MP4 variant Twitter serves. Login-gated or age-restricted tweets are skipped.</p>
+        <p><strong>Bookmarklet: yes. Paste-a-link: yes.</strong> Offers each quality TikTok published (usually 540p and 720p) plus the sound on its own as MP3.</p>
       </article>
       <article>
         <h3><img src="../icons/instagram.svg" alt="" class="platform-icon">Instagram Reels downloader</h3>
-        <p><strong>Working today for public Reels.</strong> Paste a public Reel or video post link and OmniSaver extracts the MP4 URL from Instagram's own Open Graph tags. Carousels and login-gated posts aren't supported yet.</p>
+        <p><strong>Bookmarklet: yes. Paste-a-link: public posts only.</strong> Instagram shows our server a login wall, so pasting a link only works for posts that are visible logged-out. The bookmarklet has no such limit — it runs in your own signed-in session.</p>
       </article>
       <article>
-        <h3><img src="../icons/youtube.svg" alt="" class="platform-icon">YouTube video downloader</h3>
-        <p><strong>Coming soon.</strong> YouTube's stream URLs are cryptographically signed and IP-bound, so the direct-link approach that keeps OmniSaver free doesn't work for it. YouTube support requires a proxying backend, arriving in a later release.</p>
+        <h3><img src="../icons/x.svg" alt="" class="platform-icon">X (Twitter) video downloader</h3>
+        <p><strong>Bookmarklet: yes. Paste-a-link: public tweets.</strong> Pulls the MP4 the player is using. Login-gated and age-restricted tweets only work via the bookmarklet.</p>
       </article>
       <article>
         <h3><img src="../icons/facebook.svg" alt="" class="platform-icon">Facebook video downloader</h3>
-        <p><strong>Coming soon.</strong> Facebook's public video pages have stronger anti-scraping than the other platforms; robust extraction is being developed and will ship in a later release.</p>
+        <p><strong>Bookmarklet: yes. Paste-a-link: not yet.</strong> The bookmarklet reads the HD and SD sources Facebook embeds in the page. Server-side extraction is blocked by Facebook's anti-scraping.</p>
+      </article>
+      <article>
+        <h3><img src="../icons/youtube.svg" alt="" class="platform-icon">YouTube video downloader</h3>
+        <p><strong>Not supported.</strong> YouTube streams video and audio as two separate signature-locked files that have to be muxed back together — something a browser can't do on its own. Rather than hand you a silent video, OmniSaver says so plainly. This needs a server with ffmpeg, which is a later-stage change.</p>
       </article>
     </div>
   </section>
@@ -125,7 +143,11 @@
     <h2>FAQ</h2>
     <details open>
       <summary>Which platforms are supported?</summary>
-      <p>TikTok, X/Twitter, and public Instagram Reels work end-to-end today. YouTube and Facebook are marked "coming soon" and hand the user a clear message rather than attempting a download — see the Supported Platforms section above for why.</p>
+      <p>The bookmarklet handles TikTok, Instagram, X/Twitter and Facebook. Pasting a link handles TikTok, plus public posts on Instagram and X. YouTube isn't supported either way — it serves video and audio as separate signature-locked streams that need to be muxed back together.</p>
+    </details>
+    <details>
+      <summary>What's the difference between the bookmarklet and pasting a link?</summary>
+      <p>The bookmarklet runs inside the platform's own page in your browser, so it can see anything you can see and the file downloads straight from the platform to your device. Pasting a link sends the work to our server, which isn't logged in anywhere — so it only reaches publicly visible posts, and the file passes through us on the way to you. Use the bookmarklet where you can; the link box exists for phones, where bookmarklets are awkward to install.</p>
     </details>
     <details>
       <summary>Is OmniSaver free to use?</summary>
