@@ -197,57 +197,178 @@
     return { title: name, options: opts };
   }
 
-  function grabInstagram() {
-    var opts = [], title = document.title || 'instagram';
-    // Public posts expose og:video; logged-in views expose a <video> src.
-    var og = document.querySelector('meta[property="og:video"], meta[property="og:video:secure_url"]');
-    if (og && og.content) opts.push({ label: 'Video', url: og.content, ext: 'mp4' });
-    document.querySelectorAll('video').forEach(function (v, i) {
-      var src = v.currentSrc || v.src;
-      if (src && src.indexOf('blob:') !== 0 && !opts.some(function (o) { return o.url === src; })) {
-        opts.push({ label: 'Video' + (opts.length ? ' ' + (i + 1) : ''), url: src, ext: 'mp4' });
+  // Instagram and Facebook both play video through Media Source
+  // Extensions, so the <video> element's src is a blob: URL that points
+  // at an in-memory buffer — useless to download. The real CDN URLs live
+  // in JSON embedded in the page's inline <script> tags. These helpers
+  // dig them out.
+
+  function pageScripts() {
+    var out = [];
+    document.querySelectorAll('script').forEach(function (s) {
+      var t = s.textContent;
+      if (t && t.length > 40) out.push(t);
+    });
+    return out;
+  }
+
+  function unescapeJsonUrl(u) {
+    return u.replace(/\\\//g, '/').replace(/\\u0026/g, '&').replace(/\\u0025/g, '%')
+      .replace(/\\u003D/gi, '=').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+  }
+
+  // Finds "<key>":"<url>" across every inline script, newest match wins.
+  function findJsonUrls(keys) {
+    var found = [], scripts = pageScripts();
+    keys.forEach(function (pair) {
+      var key = pair[0], label = pair[1];
+      var re = new RegExp('"' + key + '"\\s*:\\s*"(https?:[^"]{20,})"', 'g');
+      for (var i = 0; i < scripts.length; i++) {
+        var m;
+        while ((m = re.exec(scripts[i])) !== null) {
+          var u = unescapeJsonUrl(m[1]);
+          if (!found.some(function (f) { return f.url === u; })) {
+            found.push({ label: label, url: u, ext: 'mp4' });
+          }
+        }
       }
     });
-    return opts.length ? { title: title, options: opts } : null;
+    return found;
   }
 
-  function grabTwitter() {
-    var opts = [];
-    document.querySelectorAll('video').forEach(function (v) {
-      var src = v.currentSrc || v.src;
-      if (src && src.indexOf('blob:') !== 0) opts.push({ label: 'Video', url: src, ext: 'mp4' });
-      // Twitter often uses <source> children inside <video>
-      v.querySelectorAll('source').forEach(function (s) {
-        if (s.src && s.src.indexOf('blob:') !== 0 &&
-            !opts.some(function (o) { return o.url === s.src; })) {
-          opts.push({ label: 'Video (' + (s.type || 'mp4') + ')', url: s.src, ext: 'mp4' });
-        }
-      });
-    });
-    return opts.length ? { title: document.title || 'tweet', options: opts } : null;
+  // Last resort: any Meta CDN .mp4 anywhere in the document source.
+  // Instagram serves from cdninstagram.com, Facebook from fbcdn.net —
+  // match either TLD rather than assuming.
+  function scavengeMetaCdnMp4() {
+    var html = document.documentElement.innerHTML;
+    var re = /https?:(?:\\?\/){2}[^"'\s\\]*?(?:cdninstagram|fbcdn)\.(?:com|net)[^"'\s]*?\.mp4[^"'\s\\]*/gi;
+    var seen = {}, out = [], m;
+    while ((m = re.exec(html)) !== null) {
+      var u = unescapeJsonUrl(m[0]);
+      if (!seen[u]) { seen[u] = 1; out.push({ label: 'Video', url: u, ext: 'mp4' }); }
+    }
+    return out.slice(0, 4);
   }
 
-  function grabFacebook() {
-    var opts = [];
+  function nonBlobVideoEls() {
+    var out = [];
     document.querySelectorAll('video').forEach(function (v, i) {
       var src = v.currentSrc || v.src;
       if (src && src.indexOf('blob:') !== 0) {
-        opts.push({ label: 'Video' + (i ? ' ' + (i + 1) : ''), url: src, ext: 'mp4' });
+        out.push({ label: 'Video' + (i ? ' ' + (i + 1) : ''), url: src, ext: 'mp4' });
       }
-    });
-    // Facebook embeds direct URLs in inline scripts as playable_url / hd_src.
-    var html = document.documentElement.innerHTML;
-    [['hd_src', 'HD'], ['sd_src', 'SD'], ['playable_url_quality_hd', 'HD'], ['playable_url', 'SD']]
-      .forEach(function (pair) {
-        var m = html.match(new RegExp('"' + pair[0] + '"\\s*:\\s*"([^"]+)"'));
-        if (m) {
-          var u = m[1].replace(/\\\//g, '/').replace(/\\u0025/g, '%');
-          if (!opts.some(function (o) { return o.url === u; })) {
-            opts.push({ label: 'Video — ' + pair[1], url: u, ext: 'mp4' });
-          }
+      v.querySelectorAll('source').forEach(function (s) {
+        if (s.src && s.src.indexOf('blob:') !== 0) {
+          out.push({ label: 'Video (' + (s.type || 'mp4') + ')', url: s.src, ext: 'mp4' });
         }
       });
-    return opts.length ? { title: document.title || 'facebook', options: opts } : null;
+    });
+    return out;
+  }
+
+  function dedupe(list) {
+    var seen = {}, out = [];
+    list.forEach(function (o) {
+      if (o && o.url && !seen[o.url]) { seen[o.url] = 1; out.push(o); }
+    });
+    return out;
+  }
+
+  // Describes what we looked at, so a failure is diagnosable instead of
+  // just "no video found".
+  function diagnose() {
+    var vids = document.querySelectorAll('video').length;
+    var blobs = 0;
+    document.querySelectorAll('video').forEach(function (v) {
+      if ((v.currentSrc || v.src || '').indexOf('blob:') === 0) blobs++;
+    });
+    var bits = [vids + ' video element' + (vids === 1 ? '' : 's')];
+    if (blobs) bits.push(blobs + ' using blob: (streamed)');
+    if (/log in|sign up/i.test(document.body.innerText.slice(0, 400))) bits.push('page looks logged-out');
+    return bits.join(', ');
+  }
+
+  // Instagram's modern shape is "video_versions":[{width,height,url},...]
+  // — a quality ladder. Pull each entry out with its resolution label.
+  function instagramVideoVersions() {
+    var out = [];
+    pageScripts().forEach(function (src) {
+      // [\s\S] rather than . — these JSON blobs contain newlines.
+      var re = /"video_versions"\s*:\s*\[([\s\S]*?)\]/g, m;
+      while ((m = re.exec(src)) !== null) {
+        var entryRe = /\{[^{}]*?"url"\s*:\s*"(https?:[^"]+?)"[^{}]*?\}/g, e;
+        while ((e = entryRe.exec(m[1])) !== null) {
+          var h = e[0].match(/"height"\s*:\s*(\d+)/);
+          out.push({
+            label: 'Video' + (h ? ' — ' + h[1] + 'p' : ''),
+            url: unescapeJsonUrl(e[1]),
+            ext: 'mp4',
+          });
+        }
+      }
+    });
+    return out.sort(function (a, b) {
+      return (parseInt(b.label.replace(/\D/g, ''), 10) || 0) -
+        (parseInt(a.label.replace(/\D/g, ''), 10) || 0);
+    });
+  }
+
+  function grabInstagram() {
+    var og = document.querySelector('meta[property="og:video"], meta[property="og:video:secure_url"]');
+    var opts = dedupe([]
+      .concat(instagramVideoVersions())
+      .concat(og && og.content ? [{ label: 'Video', url: og.content, ext: 'mp4' }] : [])
+      .concat(findJsonUrls([
+        ['video_url', 'Video'],
+        ['playable_url_quality_hd', 'Video — HD'],
+        ['playable_url', 'Video'],
+        ['browser_native_hd_url', 'Video — HD'],
+        ['browser_native_sd_url', 'Video — SD'],
+      ]))
+      .concat(nonBlobVideoEls())
+      .concat(scavengeMetaCdnMp4()));
+    return {
+      title: document.title || 'instagram',
+      options: opts,
+      note: opts.length ? null :
+        'No downloadable video found (' + diagnose() + '). Open the reel on its own page ' +
+        '(tap it so the URL shows /reel/...), let it start playing, then run OmniSaver again.',
+    };
+  }
+
+  function grabTwitter() {
+    var opts = dedupe([]
+      .concat(nonBlobVideoEls())
+      .concat(findJsonUrls([['video_url', 'Video'], ['url', 'Video']])
+        .filter(function (o) { return /video\.twimg\.com/.test(o.url) && /\.mp4/.test(o.url); })));
+    return {
+      title: document.title || 'tweet',
+      options: opts,
+      note: opts.length ? null :
+        'No downloadable video found (' + diagnose() + '). Open the tweet on its own page and ' +
+        'let the video start playing, then run OmniSaver again.',
+    };
+  }
+
+  function grabFacebook() {
+    var opts = dedupe([]
+      .concat(findJsonUrls([
+        ['playable_url_quality_hd', 'Video — HD'],
+        ['browser_native_hd_url', 'Video — HD'],
+        ['hd_src', 'Video — HD'],
+        ['playable_url', 'Video — SD'],
+        ['browser_native_sd_url', 'Video — SD'],
+        ['sd_src', 'Video — SD'],
+      ]))
+      .concat(nonBlobVideoEls())
+      .concat(scavengeMetaCdnMp4()));
+    return {
+      title: document.title || 'facebook',
+      options: opts,
+      note: opts.length ? null :
+        'No downloadable video found (' + diagnose() + '). Open the video on its own page ' +
+        '(not the feed), let it start playing, then run OmniSaver again.',
+    };
   }
 
   function grabYoutube() {
