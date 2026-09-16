@@ -53,39 +53,53 @@ let currentUrl = '';
 let selectedFormatMode = 'video';
 
 // --- Bookmarklet ------------------------------------------------------------
-// The bookmarklet is a tiny loader that pulls grab.js from wherever this
-// page is served. Keeping the real logic in grab.js means users never
-// have to reinstall the bookmarklet when extraction logic changes.
+// The bookmarklet must be SELF-CONTAINED: platforms like TikTok set a
+// Content-Security-Policy that refuses to load scripts from other
+// origins, so the loader-shim pattern ("inject a <script src=...>")
+// gets blocked outright. Inlining the whole grabber sidesteps CSP —
+// user-initiated javascript: bookmarklets aren't subject to it — and
+// has the bonus that the bookmarklet keeps working even if this site
+// is down.
+//
+// We fetch grab.js same-origin at page load and inline it, so the
+// bookmarklet a visitor drags is always built from the current source
+// with no separate build step. Cost: updating the grabber means
+// re-dragging the bookmarklet.
 (function setUpBookmarklet() {
   const link = document.getElementById('bookmarklet');
   const codeBox = document.getElementById('bookmarklet-code');
   const copyBtn = document.getElementById('copy-code');
+  const hint = document.getElementById('bookmarklet-hint');
   if (!link) return;
 
-  const grabUrl = new URL('grab.js', document.baseURI).href;
-  const code =
-    "javascript:(function(){var d=document,s=d.createElement('script');" +
-    "s.src='" + grabUrl + "?v='+Date.now();" +
-    "(d.body||d.documentElement).appendChild(s);})()";
-
-  link.href = code;
-  if (codeBox) codeBox.value = code;
-
-  // Clicking it here (rather than on a video page) does nothing useful,
-  // so explain that instead of running a no-op script.
   link.addEventListener('click', (e) => {
     e.preventDefault();
-    const hint = document.getElementById('bookmarklet-hint');
     if (hint) {
-      hint.textContent = 'Drag it to your bookmarks bar — clicking it works on a video page, not here.';
+      hint.textContent = 'Drag it to your bookmarks bar — it runs on a video page, not here.';
       hint.style.color = 'var(--accent-strong)';
     }
   });
 
+  fetch(new URL('grab.js', document.baseURI).href)
+    .then((r) => {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.text();
+    })
+    .then((src) => {
+      const code = 'javascript:' + encodeURIComponent(src);
+      link.href = code;
+      link.dataset.ready = 'true';
+      if (codeBox) codeBox.value = code;
+    })
+    .catch(() => {
+      if (hint) hint.textContent = "Couldn't build the bookmarklet — try reloading the page.";
+    });
+
   if (copyBtn && codeBox) {
     copyBtn.addEventListener('click', async () => {
+      if (!codeBox.value) return;
       try {
-        await navigator.clipboard.writeText(code);
+        await navigator.clipboard.writeText(codeBox.value);
         copyBtn.textContent = 'Copied';
       } catch {
         codeBox.select();
