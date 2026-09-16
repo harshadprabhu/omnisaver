@@ -6,23 +6,26 @@ ad slot placeholders for monetization.
 
 ## Two backends, one frontend
 
-The frontend (`public/`) always calls a `/api/resolve` endpoint and hands
-the browser the resulting direct CDN URL. Which backend answers is
-configurable via `window.OMNISAVER_EDGE_BASE` (see `public/config.js`):
+The frontend (`public/`) always calls `/api/resolve` (metadata) and
+`/api/download` (file bytes). Which backend answers is configurable via
+`window.OMNISAVER_EDGE_BASE` (see `public/config.js`):
 
 | Backend | Where it runs | Platforms supported | Cost |
 |---|---|---|---|
-| **Edge extractors** (`edge/`) | Deno Deploy free tier — no card, 1M req/mo, 100 GB egress. TypeScript, no subprocesses. | TikTok, X/Twitter, public Instagram Reels | Free |
-| **yt-dlp proxy** (`server/`) | Any Node/Docker host. Uses yt-dlp; can proxy full byte stream. | All 5 platforms including YouTube & Facebook | Bandwidth-dependent |
+| **Edge extractors** (`edge/`) | Deno Deploy free tier — no card, 1M req/mo, 100 GB egress. TypeScript, no subprocesses. | TikTok, X/Twitter, public Instagram Reels | Free until ~10-20k downloads/month |
+| **yt-dlp proxy** (`server/`) | Any Node/Docker host. Uses yt-dlp for extraction; proxies bytes. | All 5 platforms including YouTube & Facebook | Bandwidth-dependent |
 
 **Stage 1 (this repo's default deploy):** Edge extractors on Deno Deploy.
-Bytes flow platform → user directly, our server sees ~200KB of platform
-HTML per request. Fits comfortably in Deno's free tier at real scale.
+Bytes are STREAMED through the edge service — this is important:
+platform CDNs (TikTok/Akamai especially) reject requests from IPs that
+didn't establish the signed URL, and require the session cookies from
+the initial page load. A plain browser redirect to the CDN URL 403s.
+Proxying is the only reliable way to actually deliver a file.
 
 **Stage 2 (later, when ad revenue justifies it):** Bring the yt-dlp
 backend up on a paid host (Hetzner ~€5/mo works fine) for the platforms
 edge extraction can't handle — YouTube's signed URLs and Facebook's
-anti-scraping both require a proxying backend, not just extraction.
+anti-scraping both require yt-dlp's platform-specific handling.
 
 ## How the extractors actually work
 

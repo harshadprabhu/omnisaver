@@ -1,33 +1,63 @@
 import { fetchAsBrowser } from "./_fetch.ts";
 
-// X/Twitter's public tweet pages heavily hide media from unauthenticated
-// requests, but the syndication endpoint (used by embedded tweets) still
-// returns clean JSON with media URLs. This is the same mechanism
-// Twitter's own oEmbed uses, so it's stable and doesn't need auth.
-//
-// URL shape: https://cdn.syndication.twimg.com/tweet-result?id=<id>&token=<token>
-// The token is derived from the tweet id (see makeSyndicationToken).
+// X/Twitter's syndication endpoint (the same one embedded tweets use)
+// returns clean JSON with direct MP4 variant URLs from
+// video.twimg.com. Those CDN URLs are more permissive than TikTok's —
+// no session-cookie requirement — so streaming works with plain
+// browser-like headers.
 
-interface TwitterResult {
+interface TwitterFormat {
+  format_id: string;
+  ext: string;
+  resolution: string;
+  filesize: number | null;
+  hasVideo: boolean;
+  hasAudio: boolean;
+}
+
+export interface TwitterResolveResult {
   title: string;
   thumbnail?: string;
   duration?: number;
   uploader?: string;
-  formats: Array<{
-    format_id: string;
-    ext: string;
-    resolution: string;
-    filesize: number | null;
-    hasVideo: boolean;
-    hasAudio: boolean;
-    url: string;
-  }>;
+  formats: TwitterFormat[];
 }
 
-export async function resolveTwitter(url: string): Promise<TwitterResult> {
+export async function resolveTwitter(url: string): Promise<TwitterResolveResult> {
+  const { formats, meta } = await extract(url);
+  return {
+    title: meta.title,
+    thumbnail: meta.thumbnail,
+    duration: meta.duration,
+    uploader: meta.uploader,
+    formats: formats.map(({ url: _u, ...f }) => f),
+  };
+}
+
+export async function streamTwitterFormat(
+  pageUrl: string,
+  formatId: string,
+): Promise<Response> {
+  const { formats } = await extract(pageUrl);
+  const match = formats.find((f) => f.format_id === formatId);
+  if (!match) throw new Error(`format ${formatId} not present`);
+  return await fetch(match.url, {
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+        "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+      "referer": pageUrl,
+      "range": "bytes=0-",
+    },
+  });
+}
+
+async function extract(url: string): Promise<{
+  formats: Array<TwitterFormat & { url: string }>;
+  meta: { title: string; thumbnail?: string; duration?: number; uploader?: string };
+}> {
   const id = extractTweetId(url);
   if (!id) throw new Error("no tweet id in url");
-
   const token = makeSyndicationToken(id);
   const apiUrl =
     `https://cdn.syndication.twimg.com/tweet-result?id=${id}&token=${token}&lang=en`;
@@ -37,46 +67,43 @@ export async function resolveTwitter(url: string): Promise<TwitterResult> {
   // deno-lint-ignore no-explicit-any
   const data: any = await res.json();
 
-  const author = data?.user?.name || data?.user?.screen_name;
-  const uploader = data?.user?.screen_name ? `@${data.user.screen_name}` : author;
+  const uploader = data?.user?.screen_name
+    ? `@${data.user.screen_name}`
+    : data?.user?.name;
 
-  // Tweets can carry media in .video (single video), or .mediaDetails[]
-  // (up to 4 items, mixed photos + one video).
   const videoObj = data?.video ??
-    data?.mediaDetails?.find((m: { type?: string }) => m?.type === "video" || m?.type === "animated_gif");
-
+    data?.mediaDetails?.find((m: { type?: string }) =>
+      m?.type === "video" || m?.type === "animated_gif"
+    );
   if (!videoObj) throw new Error("tweet has no video");
 
   const variants: Array<{ content_type?: string; bitrate?: number; url: string }> =
     videoObj?.variants ?? videoObj?.video_info?.variants ?? [];
-
   const mp4s = variants
     .filter((v) => v.content_type === "video/mp4" && !!v.url)
     .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0));
-
   if (mp4s.length === 0) throw new Error("no mp4 variants in tweet");
 
   const durationMs = videoObj?.durationMs ?? videoObj?.duration_millis;
 
-  const formats = mp4s.slice(0, 4).map((v, i) => {
-    const res = pickResolution(v.url);
-    return {
-      format_id: `mp4-${i}`,
-      ext: "mp4",
-      resolution: res,
-      filesize: null,
-      hasVideo: true,
-      hasAudio: true,
-      url: v.url,
-    };
-  });
+  const formats = mp4s.slice(0, 4).map((v, i) => ({
+    format_id: `mp4-${i}`,
+    ext: "mp4",
+    resolution: pickResolution(v.url),
+    filesize: null,
+    hasVideo: true,
+    hasAudio: true,
+    url: v.url,
+  }));
 
   return {
-    title: (data?.text as string)?.trim().slice(0, 120) || "Tweet video",
-    thumbnail: videoObj?.poster || data?.mediaDetails?.[0]?.media_url_https,
-    duration: durationMs ? Math.round(durationMs / 1000) : undefined,
-    uploader,
     formats,
+    meta: {
+      title: ((data?.text as string) ?? "").trim().slice(0, 120) || "Tweet video",
+      thumbnail: videoObj?.poster || data?.mediaDetails?.[0]?.media_url_https,
+      duration: durationMs ? Math.round(durationMs / 1000) : undefined,
+      uploader,
+    },
   };
 }
 
@@ -85,17 +112,12 @@ function extractTweetId(url: string): string | null {
   return m ? m[1] : null;
 }
 
-// Twitter's syndication endpoint requires a token computed from the tweet
-// id. The algorithm is public (published after the endpoint locked down
-// in 2023): (id / 1e15) * PI, then base36, then strip 0s and dots. Any
-// wrong token gets a 404.
 function makeSyndicationToken(id: string): string {
   const n = (Number(id) / 1e15) * Math.PI;
   return n.toString(36).replace(/(0+|\.)/g, "");
 }
 
 function pickResolution(url: string): string {
-  // Twitter/X video URLs embed the resolution as /NxN/ in the path.
   const m = url.match(/\/(\d{2,4})x(\d{2,4})\//);
   return m ? `${m[2]}p` : "video";
 }
