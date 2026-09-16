@@ -57,16 +57,42 @@
 <main class="wrap">
 
   <section class="app-card">
-    <h1>Save video or audio from any link</h1>
-    <p class="hero__sub">Paste a link — YouTube, Instagram, Facebook, TikTok or X are detected automatically.</p>
+    <h1>Save video or audio, straight from the page</h1>
+    <p class="hero__sub">Drag the button below to your bookmarks bar. Then open any TikTok, Instagram, X or Facebook video and click it — the file downloads directly from the platform to your device.</p>
 
     <div class="platform-strip" aria-label="Supported platforms">
       <img src="icons/tiktok.svg" alt="TikTok" class="platform-icon" title="TikTok — supported">
+      <img src="icons/instagram.svg" alt="Instagram" class="platform-icon" title="Instagram — supported">
       <img src="icons/x.svg" alt="X" class="platform-icon" title="X — supported">
-      <img src="icons/instagram.svg" alt="Instagram" class="platform-icon" title="Instagram — public reels supported">
-      <img src="icons/youtube.svg" alt="YouTube" class="platform-icon platform-icon--coming" title="YouTube — coming soon">
-      <img src="icons/facebook.svg" alt="Facebook" class="platform-icon platform-icon--coming" title="Facebook — coming soon">
+      <img src="icons/facebook.svg" alt="Facebook" class="platform-icon" title="Facebook — supported">
+      <img src="icons/youtube.svg" alt="YouTube" class="platform-icon platform-icon--coming" title="YouTube — not supported (split DRM streams)">
     </div>
+
+    <div class="bookmarklet-row">
+      <a class="bookmarklet" id="bookmarklet" href="#" draggable="true">
+        <span class="bookmarklet__mark" aria-hidden="true">⬇</span>
+        Save with OmniSaver
+      </a>
+      <span class="bookmarklet__hint" id="bookmarklet-hint">← drag me to your bookmarks bar</span>
+    </div>
+
+    <ol class="steps">
+      <li>Drag the button up to your bookmarks bar (or right-click it → Bookmark Link).</li>
+      <li>Open the TikTok / Instagram / X / Facebook video you want.</li>
+      <li>Click the bookmark. Pick a quality. Done.</li>
+    </ol>
+
+    <details class="mobile-note">
+      <summary>On a phone?</summary>
+      <p>Bookmarklets are fiddly on mobile, so use the paste-a-link box below instead — it does the same job through our server. On Android Chrome you <em>can</em> use the bookmarklet: bookmark any page, edit the bookmark, replace its URL with the code below, then type the bookmark's name in the address bar while on a video page.</p>
+      <textarea class="bookmarklet-code" id="bookmarklet-code" readonly rows="3" aria-label="Bookmarklet code"></textarea>
+      <button type="button" class="copy-btn" id="copy-code">Copy code</button>
+    </details>
+  </section>
+
+  <section class="app-card">
+    <h2 class="fallback-title">Or paste a link</h2>
+    <p class="hero__sub">Works on mobile and without the bookmarklet. Runs through our server, so it's limited to what our server can reach — public posts only.</p>
 
     <form id="resolve-form" class="fetch-form" autocomplete="off">
       <div class="fetch-form__input-row">

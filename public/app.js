@@ -52,6 +52,50 @@ const previewBanner = document.getElementById('preview-banner');
 let currentUrl = '';
 let selectedFormatMode = 'video';
 
+// --- Bookmarklet ------------------------------------------------------------
+// The bookmarklet is a tiny loader that pulls grab.js from wherever this
+// page is served. Keeping the real logic in grab.js means users never
+// have to reinstall the bookmarklet when extraction logic changes.
+(function setUpBookmarklet() {
+  const link = document.getElementById('bookmarklet');
+  const codeBox = document.getElementById('bookmarklet-code');
+  const copyBtn = document.getElementById('copy-code');
+  if (!link) return;
+
+  const grabUrl = new URL('grab.js', document.baseURI).href;
+  const code =
+    "javascript:(function(){var d=document,s=d.createElement('script');" +
+    "s.src='" + grabUrl + "?v='+Date.now();" +
+    "(d.body||d.documentElement).appendChild(s);})()";
+
+  link.href = code;
+  if (codeBox) codeBox.value = code;
+
+  // Clicking it here (rather than on a video page) does nothing useful,
+  // so explain that instead of running a no-op script.
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const hint = document.getElementById('bookmarklet-hint');
+    if (hint) {
+      hint.textContent = 'Drag it to your bookmarks bar — clicking it works on a video page, not here.';
+      hint.style.color = 'var(--accent-strong)';
+    }
+  });
+
+  if (copyBtn && codeBox) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code);
+        copyBtn.textContent = 'Copied';
+      } catch {
+        codeBox.select();
+        copyBtn.textContent = 'Press Ctrl/Cmd+C';
+      }
+      setTimeout(() => { copyBtn.textContent = 'Copy code'; }, 2500);
+    });
+  }
+})();
+
 (async () => {
   try {
     const controller = new AbortController();
