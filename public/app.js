@@ -4,11 +4,15 @@
 // "https://omnisaver.deno.dev".
 const EDGE_BASE = window.OMNISAVER_EDGE_BASE || '';
 
-// Coming-soon platforms are detected in the UI (so the strip stays
-// visually complete) but the resolve request is short-circuited with a
-// friendly message rather than round-tripping to a service that would
-// just reject them.
-const COMING_SOON = new Set(['youtube', 'facebook']);
+// YouTube can't be done from a browser at all: it serves video and audio
+// as separate signature-locked streams that need muxing back together.
+const UNSUPPORTED = new Set(['youtube']);
+
+// These reach our server fine, but the platform answers a datacenter IP
+// with a login wall, so the link box genuinely can't help. The in-page
+// method can — it runs in the visitor's own signed-in session. Say so
+// immediately instead of letting them wait for a failure.
+const NEEDS_IN_PAGE = new Set(['instagram', 'facebook']);
 
 const PLATFORM_PATTERNS = [
   { id: 'youtube', label: 'YouTube', icon: 'icons/youtube.svg', re: /(?:youtube\.com|youtu\.be)/i },
@@ -136,8 +140,11 @@ function updateDetectStatus(value) {
     detectIcon.src = match.icon;
     detectIcon.alt = match.label;
     detectIcon.hidden = false;
-    if (COMING_SOON.has(match.id)) {
-      detectLabel.textContent = `${match.label} — coming soon`;
+    if (UNSUPPORTED.has(match.id)) {
+      detectLabel.textContent = `${match.label} — not supported`;
+      heroModeToggle.hidden = true;
+    } else if (NEEDS_IN_PAGE.has(match.id)) {
+      detectLabel.textContent = `${match.label} — use the in-page method above`;
       heroModeToggle.hidden = true;
     } else {
       detectLabel.textContent = `${match.label} detected`;
@@ -205,19 +212,46 @@ form.addEventListener('submit', async (e) => {
   resultsSection.hidden = true;
 
   const match = detectPlatform(url);
-  if (match && COMING_SOON.has(match.id)) {
-    showError(`${match.label} support is coming in a later release. TikTok, X/Twitter and public Instagram Reels work today.`);
+  if (match && UNSUPPORTED.has(match.id)) {
+    showError(
+      `${match.label} serves video and audio as two separate locked streams that have to be merged back together, which a browser can't do. Not supported.`,
+    );
+    return;
+  }
+  if (match && NEEDS_IN_PAGE.has(match.id)) {
+    showError(
+      `${match.label} shows our server a login page, so the link box can't reach it. Use the in-page method above — it runs in your own logged-in session and works.`,
+    );
     return;
   }
 
   setLoading(true);
   try {
-    const res = await fetch(`${EDGE_BASE}/api/resolve`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
-    });
-    const data = await res.json();
+    let res;
+    try {
+      res = await fetch(`${EDGE_BASE}/api/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+    } catch {
+      throw new Error(
+        "Can't reach the download service. Check your connection, or use the in-page method above — it works without our server.",
+      );
+    }
+
+    // A static host with no API answers with its own 404 HTML page, which
+    // would otherwise surface as a raw "Unexpected token '<'" JSON parse
+    // error. Catch that and say something useful instead.
+    const body = await res.text();
+    let data;
+    try {
+      data = JSON.parse(body);
+    } catch {
+      throw new Error(
+        'The link box needs a backend that isn’t connected to this site yet. Use the in-page method above instead — it downloads straight from the platform and needs no server.',
+      );
+    }
     if (!res.ok) throw new Error(data.error || 'Something went wrong.');
 
     currentUrl = url;

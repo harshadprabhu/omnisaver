@@ -83,10 +83,26 @@
     </ol>
 
     <details class="mobile-note">
-      <summary>On a phone?</summary>
-      <p>Bookmarklets are fiddly on mobile, so use the paste-a-link box below instead — it does the same job through our server. On Android Chrome you <em>can</em> use the bookmarklet: bookmark any page, edit the bookmark, replace its URL with the code below, then type the bookmark's name in the address bar while on a video page.</p>
+      <summary>On a phone? (Instagram &amp; Facebook need this)</summary>
+      <p><strong>Android Chrome</strong> — it has no extensions, but the bookmarklet still works:</p>
+      <ol class="steps steps--tight">
+        <li>Tap <em>Copy code</em> below.</li>
+        <li>Bookmark this page (☆ in the menu).</li>
+        <li>Open <em>Bookmarks</em>, long-press the one you just made, tap <em>Edit</em>.</li>
+        <li>Name it <strong>save</strong>, and replace the URL with the copied code. Save.</li>
+        <li>Open a video, then type <strong>save</strong> in the address bar and tap the bookmark suggestion.</li>
+      </ol>
+      <p><strong>Firefox for Android or Kiwi Browser</strong> — install the extension instead (link below); you get a real toolbar button.</p>
+      <p><strong>iPhone</strong> — Safari supports bookmarklets the same way: copy the code, add a bookmark, edit it and paste the code as the URL.</p>
       <textarea class="bookmarklet-code" id="bookmarklet-code" readonly rows="3" aria-label="Bookmarklet code"></textarea>
       <button type="button" class="copy-btn" id="copy-code">Copy code</button>
+    </details>
+
+    <details class="mobile-note">
+      <summary>Browser extension (one-click, no dragging)</summary>
+      <p>Works on desktop Chrome, Edge, Brave and Firefox, plus Firefox for Android and Kiwi Browser. It adds a toolbar button that does the same thing as the bookmarklet.</p>
+      <p>It isn't in the web stores yet, so install it manually: download the zip, unpack it, then in Chrome open <code>chrome://extensions</code>, turn on <em>Developer mode</em>, and choose <em>Load unpacked</em>. In Firefox use <code>about:debugging</code> → <em>Load Temporary Add-on</em>.</p>
+      <p><a class="copy-btn" style="display:inline-block;text-decoration:none" href="omnisaver-extension.zip" download>Download extension (.zip)</a></p>
     </details>
   </section>
 

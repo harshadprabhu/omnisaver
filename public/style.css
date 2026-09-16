@@ -172,6 +172,7 @@ h1{
   font-size:13.5px;color:var(--ink-dim);
 }
 .steps li::marker{color:var(--accent);font-weight:700}
+.steps--tight{margin:8px 0 12px;font-size:13px;gap:5px}
 
 .mobile-note{margin-top:18px;border-top:1px solid var(--border);padding-top:14px}
 .mobile-note summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-dim)}
