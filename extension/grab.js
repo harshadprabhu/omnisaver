@@ -277,15 +277,68 @@
   // Describes what we looked at, so a failure is diagnosable instead of
   // just "no video found".
   function diagnose() {
-    var vids = document.querySelectorAll('video').length;
-    var blobs = 0;
-    document.querySelectorAll('video').forEach(function (v) {
-      if ((v.currentSrc || v.src || '').indexOf('blob:') === 0) blobs++;
-    });
-    var bits = [vids + ' video element' + (vids === 1 ? '' : 's')];
-    if (blobs) bits.push(blobs + ' using blob: (streamed)');
-    if (/log in|sign up/i.test(document.body.innerText.slice(0, 400))) bits.push('page looks logged-out');
+    var d = diagnostics();
+    var bits = [d.videoEls + ' video element' + (d.videoEls === 1 ? '' : 's')];
+    if (d.blobVideos) bits.push(d.blobVideos + ' using blob: (streamed)');
+    if (d.loggedOut) bits.push('you look logged out in this browser');
     return bits.join(', ');
+  }
+
+  // Structured version of the above, for the copyable report.
+  function diagnostics() {
+    var vids = document.querySelectorAll('video');
+    var blobs = 0;
+    for (var i = 0; i < vids.length; i++) {
+      if ((vids[i].currentSrc || vids[i].src || '').indexOf('blob:') === 0) blobs++;
+    }
+    var html = document.documentElement.innerHTML;
+    var text = (document.body.innerText || '').slice(0, 800);
+    return {
+      host: HOST,
+      path: location.pathname,
+      title: (document.title || '').slice(0, 80),
+      videoEls: vids.length,
+      blobVideos: blobs,
+      loggedOut: /log in|sign up|create new account/i.test(text),
+      htmlKB: Math.round(html.length / 1024),
+      hasOgVideo: !!document.querySelector('meta[property="og:video"]'),
+      hasVideoVersions: html.indexOf('video_versions') !== -1,
+      hasPlayableUrl: html.indexOf('playable_url') !== -1,
+      hasVideoUrlKey: html.indexOf('"video_url"') !== -1,
+      cdnMp4Matches: (html.match(/(?:cdninstagram|fbcdn)\.(?:com|net)[^"'\s]*?\.mp4/gi) || []).length,
+      scriptCount: document.querySelectorAll('script').length,
+      ua: navigator.userAgent.slice(0, 110),
+    };
+  }
+
+  // A failure is only useful if it can be reported. This renders a
+  // one-tap "copy report" button so the details come back as text
+  // instead of a screenshot of a truncated message.
+  function addDiagnosticButton() {
+    var b = el('button',
+      'display:block;width:100%;margin-top:10px;background:var(--x,#F5F6F8);' +
+      'border:1px solid #E1E4EA;color:#14171F;padding:9px 12px;border-radius:10px;' +
+      'font-size:12.5px;cursor:pointer;font-family:inherit;', 'Copy diagnostic report');
+    b.onclick = function () {
+      var report = 'OmniSaver diagnostics\n' + JSON.stringify(diagnostics(), null, 2);
+      var done = function () { b.textContent = 'Copied — paste it to report this'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(report).then(done, function () { fallback(report, b); });
+      } else {
+        fallback(report, b);
+      }
+    };
+    listEl.appendChild(b);
+  }
+
+  function fallback(text, btn) {
+    var ta = el('textarea',
+      'width:100%;margin-top:8px;font-size:11px;font-family:monospace;height:120px;' +
+      'border:1px solid #E1E4EA;border-radius:8px;padding:8px;');
+    ta.value = text;
+    listEl.appendChild(ta);
+    ta.select();
+    btn.textContent = 'Select the text above and copy it';
   }
 
   // Instagram's modern shape is "video_versions":[{width,height,url},...]
@@ -396,14 +449,27 @@
     return;
   }
 
-  var found;
-  try { found = grabber(); } catch (e) { found = null; }
+  var found, threw = null;
+  try { found = grabber(); } catch (e) { threw = e; found = null; }
 
   if (!found || !found.options || !found.options.length) {
     buildPanel(found && found.title);
-    status(found && found.note
-      ? found.note
-      : 'No video found on this page. Make sure the video is open and has started playing, then try again.');
+    var msg;
+    if (threw) {
+      msg = 'Extractor error: ' + threw.message;
+    } else if (diagnostics().loggedOut && /instagram|facebook/.test(HOST)) {
+      // By far the most common cause: signed in to the app, but not to
+      // the browser this is running in. Lead with that rather than the
+      // generic advice.
+      msg = 'You appear to be logged out of ' +
+        (/instagram/.test(HOST) ? 'Instagram' : 'Facebook') +
+        ' in this browser (' + diagnose() + '). Log in here — not just in the app — ' +
+        'reload the video, then run OmniSaver again.';
+    } else {
+      msg = (found && found.note) || 'No video found on this page (' + diagnose() + ').';
+    }
+    status(msg);
+    addDiagnosticButton();
     return;
   }
 
